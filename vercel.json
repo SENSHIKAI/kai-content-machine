@@ -1,5 +1,7 @@
 {
-  "rewrites": [
-    { "source": "/api/claude", "destination": "/api/claude.js" }
-  ]
+  "functions": {
+    "api/claude.js": {
+      "runtime": "edge"
+    }
+  }
 }

@@ -130,7 +130,7 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .slide-num { font-family: 'Fraunces', serif; font-size: clamp(2rem,6vw,5rem); font-weight: 900; line-height: 1; opacity: 0.1; }
 .slide-title { font-family: 'Fraunces', serif; font-size: clamp(0.9rem,2.2vw,1.6rem); font-weight: 900; line-height: 1.1; text-transform: uppercase; }
 .slide-callout { padding: 0.5rem 0.75rem; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: clamp(0.55rem,0.9vw,0.75rem); font-weight: 600; line-height: 1.4; margin-top: 0.5rem; }
-.slide-img-wrap { width: 100%; height: 32%; overflow: hidden; border-radius: 6px; }
+.slide-img-wrap { width: 100%; height: 52%; overflow: hidden; border-radius: 6px; }
 .slide-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .slide-body { font-family: 'Inter', sans-serif; font-size: clamp(0.6rem,1.1vw,0.82rem); line-height: 1.75; }
 .takeaway-inner { justify-content: center; }
@@ -418,33 +418,41 @@ function activateNode(id) {
 }
 
 function unsplashUrl(keyword, w, h) {
-  const keywords = encodeURIComponent((keyword || 'finance') + ' money');
-  return 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=' + w + '&q=80&auto=format&fit=crop';
+  return unsplashSearch(keyword, 'cover');
 }
 
-function unsplashSearch(keyword) {
-  const searches = {
-    money: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=600&q=80&auto=format&fit=crop',
-    savings: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=600&q=80&auto=format&fit=crop',
-    investment: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80&auto=format&fit=crop',
-    finance: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&auto=format&fit=crop',
-    retirement: 'https://images.unsplash.com/photo-1559526324-593bc073d938?w=600&q=80&auto=format&fit=crop',
-    planning: 'https://images.unsplash.com/photo-1484981184820-2e84ea0af397?w=600&q=80&auto=format&fit=crop',
-    coins: 'https://images.unsplash.com/photo-1618044733300-9472054094ee?w=600&q=80&auto=format&fit=crop',
-    growth: 'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=600&q=80&auto=format&fit=crop',
-    chart: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80&auto=format&fit=crop',
-    family: 'https://images.unsplash.com/photo-1511895426328-dc8714191011?w=600&q=80&auto=format&fit=crop',
-    singapore: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&q=80&auto=format&fit=crop',
-    news: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80&auto=format&fit=crop',
-    economy: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&q=80&auto=format&fit=crop',
-    trading: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80&auto=format&fit=crop',
-    insurance: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600&q=80&auto=format&fit=crop',
-    cpf: 'https://images.unsplash.com/photo-1559526324-593bc073d938?w=600&q=80&auto=format&fit=crop',
-    default: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&auto=format&fit=crop'
-  };
-  const key = (keyword || '').toLowerCase();
-  return searches[key] || searches['default'];
+const _IMGS = {
+  money:      ['photo-1580519542036-c47de6196ba5','photo-1621981386829-9b458a2cddde','photo-1565514020179-026b92b84bb6'],
+  savings:    ['photo-1579621970563-ebec7560ff3e','photo-1554224154-26032ffc0d07','photo-1518458028785-8fbcd101ebb9'],
+  investment: ['photo-1611974789855-9c2a0a7236a3','photo-1590283603385-17ffb3a7f29f','photo-1642790106117-e829e14a795f'],
+  finance:    ['photo-1554224155-6726b3ff858f','photo-1460925895917-afdab827c52f','photo-1553729459-efe14ef6055d'],
+  retirement: ['photo-1559526324-593bc073d938','photo-1434030216411-0b793f4b4173','photo-1473186578172-c141e6798cf4'],
+  planning:   ['photo-1484981184820-2e84ea0af397','photo-1507679799987-c73779587ccf','photo-1542626991-cbc4e32524cc'],
+  coins:      ['photo-1618044733300-9472054094ee','photo-1561414927-6d86591d0c4f','photo-1624365169198-38255ba54160'],
+  growth:     ['photo-1543286386-713bdd548da4','photo-1504868584819-f8e8b4b6d7e3','photo-1535320903710-d993d3d77d29'],
+  chart:      ['photo-1611974789855-9c2a0a7236a3','photo-1551288049-bebda4e38f71','photo-1559523161-0fc0d8b814b4'],
+  family:     ['photo-1511895426328-dc8714191011','photo-1556742049-0cfed4f6a45d','photo-1484328671702-91ffb9e75fdb'],
+  singapore:  ['photo-1525625293386-3f8f99389edd','photo-1508964942454-1a56651d54ac','photo-1565967511849-76a60a516170'],
+  news:       ['photo-1504711434969-e33886168f5c','photo-1585829365295-ab7cd400c167','photo-1557607778-8ea1a3ceab8b'],
+  economy:    ['photo-1526304640581-d334cdbbf45e','photo-1444653614773-995cb1ef9efa','photo-1611974789855-9c2a0a7236a3'],
+  trading:    ['photo-1611974789855-9c2a0a7236a3','photo-1590283603385-17ffb3a7f29f','photo-1460925895917-afdab827c52f'],
+  insurance:  ['photo-1450101499163-c8848c66ca85','photo-1521791136064-7986c2920216','photo-1516321318423-f06f85e504b3'],
+  cpf:        ['photo-1559526324-593bc073d938','photo-1434030216411-0b793f4b4173','photo-1507679799987-c73779587ccf'],
+  default:    ['photo-1554224155-6726b3ff858f','photo-1460925895917-afdab827c52f','photo-1580519542036-c47de6196ba5'],
+};
+let _imgIdx = {};
+
+function unsplashSearch(keyword, uniqueKey) {
+  const key = (keyword || 'finance').toLowerCase();
+  const pool = _IMGS[key] || _IMGS.default;
+  const ckey = uniqueKey || (key + Math.random());
+  if (_imgIdx[ckey] === undefined) _imgIdx[ckey] = Math.floor(Math.random() * pool.length);
+  const photo = pool[_imgIdx[ckey] % pool.length];
+  _imgIdx[ckey]++;
+  return 'https://images.unsplash.com/' + photo + '?w=800&q=80&auto=format&fit=crop';
 }
+
+function resetImgCounters() { _imgIdx = {}; }
 
 function buildDeckHTML(pdfData, type, slidesHTML) {
   var t = THEMES[selectedTheme] || THEMES.cream;
@@ -469,13 +477,14 @@ function buildDeckHTML(pdfData, type, slidesHTML) {
 
 function buildContentSlides(pdfData, type) {
   var t = THEMES[selectedTheme] || THEMES.cream;
+  resetImgCounters();
   return (pdfData.slides || []).map(function(slide, si) {
-    var imgUrl = unsplashSearch(slide.imageKeyword || pdfData.imageKeyword || 'finance');
+    var imgUrl = unsplashSearch(slide.imageKeyword || pdfData.imageKeyword || 'finance', type.id + '-' + si);
     var calloutHTML = slide.callout ? '<div class="slide-callout" style="background:' + t.calloutBg + ';color:' + t.calloutText + '">' + slide.callout + '</div>' : '';
     return '<div class="slide" style="background:' + t.contentBg + '"><div class="slide-inner content-inner">' +
       '<div class="slide-left"><div class="slide-num" style="color:' + t.calloutBg + '">0' + (si+1) + '</div>' +
       '<div class="slide-title" style="color:' + t.contentText + '">' + slide.title + '</div>' + calloutHTML + '</div>' +
-      '<div class="slide-right"><div class="slide-img-wrap"><img src="' + imgUrl + '" alt="finance" class="slide-img" onerror="this.style.display=\'none\'"/></div>' +
+      '<div class="slide-right"><div class="slide-img-wrap" style="height:52%"><img src="' + imgUrl + '" alt="finance" class="slide-img" onerror="this.parentElement.style.display=\'none\'"/></div>' +
       '<div class="slide-body" style="color:' + t.contentSub + '">' + slide.body + '</div></div>' +
       '</div></div>';
   }).join('');
@@ -485,7 +494,7 @@ function downloadDeck(index, title) {
   var deckEl = document.getElementById('deck-' + index);
   if (!deckEl) return;
   var t = THEMES[selectedTheme] || THEMES.cream;
-  var css = '* {box-sizing:border-box;margin:0;padding:0} body {background:#f0ece4;font-family:Inter,sans-serif} .save-bar {position:fixed;top:0;left:0;right:0;background:#1C1C1C;color:#F5F0E8;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;z-index:999;font-family:Inter,sans-serif} .save-bar-title {font-size:13px;font-weight:600;letter-spacing:0.04em} .save-bar-steps {font-size:11px;opacity:0.6;margin:0 1rem} .save-btn {background:#F5F0E8;color:#1C1C1C;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em} .save-btn:hover {background:#e8e4dc} .deck {margin-top:56px;display:flex;flex-direction:column;gap:8px;padding:16px;max-width:900px;margin-left:auto;margin-right:auto} .slide {width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:8px} .slide-inner {position:absolute;inset:0;padding:4% 5%;display:flex;flex-direction:column} .cover-inner {justify-content:space-between} .slide-tag {display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;border:1px solid;padding:4px 10px;border-radius:100px;margin-bottom:1rem;width:fit-content} .slide-cover-title {font-family:"Playfair Display",serif;font-size:clamp(1.2rem,3.5vw,2.8rem);font-weight:900;line-height:1.05;text-transform:uppercase;margin-bottom:0.75rem;max-width:65%} .slide-cover-intro {font-size:clamp(0.65rem,1.2vw,0.85rem);line-height:1.65;max-width:60%} .slide-cover-footer {display:flex;justify-content:space-between;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;border-top:1px solid;padding-top:0.75rem} .content-inner {flex-direction:row;gap:3rem;align-items:stretch} .slide-left {width:36%;display:flex;flex-direction:column;justify-content:space-between} .slide-right {flex:1;display:flex;flex-direction:column;gap:0.5rem;justify-content:center} .slide-num {font-family:"Playfair Display",serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;line-height:1;opacity:0.1} .slide-title {font-family:"Playfair Display",serif;font-size:clamp(0.9rem,2.2vw,1.6rem);font-weight:900;line-height:1.1;text-transform:uppercase} .slide-callout {padding:0.5rem 0.75rem;border-radius:8px;font-size:clamp(0.55rem,0.9vw,0.75rem);font-weight:600;line-height:1.4;margin-top:0.5rem} .slide-img-wrap {width:100%;height:32%;overflow:hidden;border-radius:6px} .slide-img {width:100%;height:100%;object-fit:cover;display:block} .slide-body {font-size:clamp(0.6rem,1.1vw,0.82rem);line-height:1.75} .takeaway-inner {justify-content:center} .slide-label {font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;opacity:0.45;margin-bottom:1rem} .slide-takeaway-text {font-family:"Playfair Display",serif;font-size:clamp(1rem,3vw,2.2rem);font-weight:900;line-height:1.15;text-transform:uppercase;max-width:80%} .cta-inner {justify-content:center;align-items:center;text-align:center} .slide-cta-text {font-family:"Playfair Display",serif;font-size:clamp(0.9rem,2.5vw,1.8rem);font-weight:900;text-transform:uppercase;line-height:1.15;margin-bottom:0.5rem} .slide-cta-handle {font-size:clamp(0.6rem,1vw,0.8rem);font-weight:500;opacity:0.5;margin-bottom:0.75rem;letter-spacing:0.08em} .slide-cta-disclaimer {font-size:9px;opacity:0.35;line-height:1.5;max-width:60%;margin:0 auto} a {text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px} @media print {.save-bar {display:none!important} body {background:white} .deck {margin-top:0;padding:0;max-width:100%} .slide {aspect-ratio:16/9;page-break-after:always;border-radius:0;width:100%} @page {size:A4 landscape;margin:0}}';
+  var css = '* {box-sizing:border-box;margin:0;padding:0} body {background:#f0ece4;font-family:Inter,sans-serif} .save-bar {position:fixed;top:0;left:0;right:0;background:#1C1C1C;color:#F5F0E8;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;z-index:999;font-family:Inter,sans-serif} .save-bar-title {font-size:13px;font-weight:600;letter-spacing:0.04em} .save-bar-steps {font-size:11px;opacity:0.6;margin:0 1rem} .save-btn {background:#F5F0E8;color:#1C1C1C;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em} .save-btn:hover {background:#e8e4dc} .deck {margin-top:56px;display:flex;flex-direction:column;gap:8px;padding:16px;max-width:900px;margin-left:auto;margin-right:auto} .slide {width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:8px} .slide-inner {position:absolute;inset:0;padding:4% 5%;display:flex;flex-direction:column} .cover-inner {justify-content:space-between} .slide-tag {display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;border:1px solid;padding:4px 10px;border-radius:100px;margin-bottom:1rem;width:fit-content} .slide-cover-title {font-family:"Playfair Display",serif;font-size:clamp(1.2rem,3.5vw,2.8rem);font-weight:900;line-height:1.05;text-transform:uppercase;margin-bottom:0.75rem;max-width:65%} .slide-cover-intro {font-size:clamp(0.65rem,1.2vw,0.85rem);line-height:1.65;max-width:60%} .slide-cover-footer {display:flex;justify-content:space-between;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;border-top:1px solid;padding-top:0.75rem} .content-inner {flex-direction:row;gap:3rem;align-items:stretch} .slide-left {width:36%;display:flex;flex-direction:column;justify-content:space-between} .slide-right {flex:1;display:flex;flex-direction:column;gap:0.5rem;justify-content:center} .slide-num {font-family:"Playfair Display",serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;line-height:1;opacity:0.1} .slide-title {font-family:"Playfair Display",serif;font-size:clamp(0.9rem,2.2vw,1.6rem);font-weight:900;line-height:1.1;text-transform:uppercase} .slide-callout {padding:0.5rem 0.75rem;border-radius:8px;font-size:clamp(0.55rem,0.9vw,0.75rem);font-weight:600;line-height:1.4;margin-top:0.5rem} .slide-img-wrap {width:100%;height:52%;overflow:hidden;border-radius:6px} .slide-img {width:100%;height:100%;object-fit:cover;display:block} .slide-body {font-size:clamp(0.6rem,1.1vw,0.82rem);line-height:1.75} .takeaway-inner {justify-content:center} .slide-label {font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;opacity:0.45;margin-bottom:1rem} .slide-takeaway-text {font-family:"Playfair Display",serif;font-size:clamp(1rem,3vw,2.2rem);font-weight:900;line-height:1.15;text-transform:uppercase;max-width:80%} .cta-inner {justify-content:center;align-items:center;text-align:center} .slide-cta-text {font-family:"Playfair Display",serif;font-size:clamp(0.9rem,2.5vw,1.8rem);font-weight:900;text-transform:uppercase;line-height:1.15;margin-bottom:0.5rem} .slide-cta-handle {font-size:clamp(0.6rem,1vw,0.8rem);font-weight:500;opacity:0.5;margin-bottom:0.75rem;letter-spacing:0.08em} .slide-cta-disclaimer {font-size:9px;opacity:0.35;line-height:1.5;max-width:60%;margin:0 auto} a {text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px} @media print {.save-bar {display:none!important} body {background:white} .deck {margin-top:0;padding:0;max-width:100%} .slide {aspect-ratio:16/9;page-break-after:always;border-radius:0;width:100%} @page {size:A4 landscape;margin:0}}';
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title>' +
     '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">' +
@@ -516,6 +525,7 @@ async function runPipeline() {
   document.getElementById('status-text').classList.add('active');
   document.getElementById('output-grid').innerHTML = '';
   document.querySelectorAll('.agent-node').forEach(n => n.classList.remove('active','done'));
+  resetImgCounters();
 
   // ── MARKET PULSE MODE ─────────────────────────────────────────────────
   if (marketPulseContent) {
@@ -661,6 +671,7 @@ async function regenDeck(index, deckTitle) {
 }
 
 
+function switchTab(cardIndex, tabName, btn) {
   const card = document.getElementById('card-' + cardIndex);
   card.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   card.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));

@@ -99,6 +99,9 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .type-dot { width: 7px; height: 7px; background: var(--border); border-radius: 50%; flex-shrink: 0; }
 .card-day { font-size: 11px; color: var(--muted); font-family: 'Inter', sans-serif; }
 .card-body { padding: 1.5rem; }
+.card-body-pdf { padding: 0; }
+.pdf-actions { padding: 0.85rem 1.5rem; display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; justify-content: center; background: var(--grey1); border-top: 1px solid var(--border-light); }
+.pdf-hint { padding: 0.4rem 1.5rem 0.75rem; font-size: 11px; color: var(--muted); text-align: center; background: var(--grey1); }
 .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--grey1); border-radius: var(--r-sm); padding: 4px; }
 .tab { padding: 0.5rem 1rem; font-size: 11px; font-weight: 600; cursor: pointer; border: none; border-radius: 8px; background: transparent; color: var(--muted); font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.15s; flex: 1; text-align: center; }
 .tab.active { background: white; color: var(--text); box-shadow: var(--shadow-sm); }
@@ -703,11 +706,11 @@ function renderCard(result, index) {
   const deckInner = buildDeckHTML(pdf, type, buildContentSlides(pdf, type));
   pdfStore[index] = { type, post, pdf };
   card.innerHTML = `<div class="card-header"><div class="card-type"><div class="type-dot"></div>${type.label}</div><div class="card-day">${type.day}</div></div>
-    <div class="card-body">
+    <div class="card-body" id="card-body-${index}">
       <div class="tabs">
         <button class="tab active" onclick="switchTab(${index},'post',this)">Telegram post</button>
-        <button class="tab" onclick="switchTab(${index},'pdf',this)">Deck preview</button>
-        <button class="tab" onclick="switchTab(${index},'score',this)">Review scores</button>
+        <button class="tab" onclick="switchTab(${index},'pdf',this);document.getElementById('card-body-${index}').className='card-body-pdf'">Deck preview</button>
+        <button class="tab" onclick="switchTab(${index},'score',this);document.getElementById('card-body-${index}').className='card-body'">Review scores</button>
       </div>
       <div class="tab-content active" id="tab-${index}-post">
         <div class="post-text" contenteditable="true" spellcheck="true">${post.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
@@ -720,15 +723,18 @@ function renderCard(result, index) {
           <div class="suggest-status" id="suggest-status-${index}"></div>
         </div>
       </div>
-      <div class="tab-content" id="tab-${index}-pdf" style="margin: -1.5rem -1.5rem 0 -1.5rem;">
+      <div class="tab-content" id="tab-${index}-pdf">
+        <div class="tabs" style="margin:1.25rem 1.5rem 1rem;">
+          <button class="tab active" onclick="switchTab(${index},'post',this);document.getElementById('card-body-${index}').className='card-body'">Telegram post</button>
+          <button class="tab active" onclick="switchTab(${index},'pdf',this)">Deck preview</button>
+          <button class="tab" onclick="switchTab(${index},'score',this);document.getElementById('card-body-${index}').className='card-body'">Review scores</button>
+        </div>
         <div class="deck-preview" id="deck-${index}">${deckInner}</div>
-        <div style="padding:1rem 1.5rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--grey1);border-top:1px solid var(--border-light);">
+        <div class="pdf-actions">
           <button class="btn-download" onclick="downloadDeck(${index},'${deckTitle}')">⬇ Download deck</button>
           <button class="btn-regen-deck" onclick="regenDeck(${index},'${deckTitle.replace(/'/g,"\\'")}')">↺ Regenerate deck</button>
         </div>
-        <div style="padding:0.5rem 1.5rem 1rem;font-size:11px;color:var(--muted);text-align:center;background:var(--grey1);">
-          Exports directly as a landscape PDF — no settings needed
-        </div>
+        <div class="pdf-hint">Exports directly as a landscape PDF — no settings needed</div>
       </div>
       <div class="tab-content" id="tab-${index}-score">
         <div class="score-row">
@@ -809,10 +815,12 @@ async function regenDeck(index, deckTitle) {
 
 function switchTab(cardIndex, tabName, btn) {
   const card = document.getElementById('card-' + cardIndex);
+  const cardBody = document.getElementById('card-body-' + cardIndex);
   card.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   card.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + cardIndex + '-' + tabName).classList.add('active');
+  if (cardBody) cardBody.className = tabName === 'pdf' ? 'card-body-pdf' : 'card-body';
 }
 
 function copyPost(index) {

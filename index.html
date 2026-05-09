@@ -420,6 +420,7 @@ function clearMarketPulse() {
 }
 
 
+async function improveTopic() {
   const raw = document.getElementById('custom-topic').value.trim();
   if (!raw) { document.getElementById('custom-topic').placeholder = 'Type a topic first!'; return; }
   const btn = document.getElementById('improve-btn');

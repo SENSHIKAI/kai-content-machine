@@ -116,7 +116,7 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .approved-badge.show { opacity: 1; }
 .empty-state { text-align: center; padding: 4rem 1rem; color: var(--muted); font-size: 13px; border: 1.5px dashed var(--border-light); border-radius: var(--r-lg); font-family: 'Inter', sans-serif; background: var(--surface); }
 .empty-icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.3; }
-.deck-preview { display: flex; flex-direction: column; gap: 0; border-radius: var(--r-md); overflow: hidden; }
+.deck-preview { display: flex; flex-direction: column; gap: 0; border-radius: 0; overflow: hidden; }
 .slide { width: 100%; aspect-ratio: 16/9; position: relative; overflow: hidden; border-radius: 0; }
 .slide-inner { position: absolute; inset: 0; padding: 2.5rem 3rem; display: flex; flex-direction: column; }
 .cover-inner { justify-content: space-between; }
@@ -552,9 +552,9 @@ async function downloadDeck(index, title) {
       if (i > 0) pdf.addPage();
       if (btn) btn.textContent = '⏳ Slide ' + (i+1) + '/' + slides.length + '...';
 
-      // Force correct dimensions before capture
+      // Force slide to render at correct 16:9 dimensions before capture
       const slideW = slides[i].offsetWidth;
-      const slideH = slides[i].offsetHeight;
+      const slideH = Math.round(slideW * 9 / 16);
 
       const canvas = await html2canvas(slides[i], {
         scale: 2,
@@ -563,20 +563,17 @@ async function downloadDeck(index, title) {
         backgroundColor: null,
         logging: false,
         width: slideW,
-        height: slideH,
-        windowWidth: slideW,
-        windowHeight: slideH
+        height: slideH
       });
 
-      // Maintain 16:9 aspect ratio within A4 landscape (297x210mm)
+      // Fill full A4 landscape - no offsets, no gaps
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      const imgAspect = canvas.width / canvas.height;
-      let imgW = pdfW;
-      let imgH = pdfW / imgAspect;
-      if (imgH > pdfH) { imgH = pdfH; imgW = pdfH * imgAspect; }
-      const offsetX = (pdfW - imgW) / 2;
-      const offsetY = (pdfH - imgH) / 2;
-      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, imgW, imgH);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+
+      // Add handle as text overlay on every slide so it survives PDF
+      pdf.setFontSize(7);
+      pdf.setTextColor(180, 180, 180);
+      pdf.text('t.me/huangks', pdfW - 8, pdfH - 4, { align: 'right' });
     }
 
     pdf.save(title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.pdf');
@@ -652,7 +649,7 @@ async function runPipeline() {
       const type = POST_TYPES[i];
       activateNode('content');
       setProgress((i*25)+4, 'Content Agent writing ' + type.label + '...');
-      const contentSystem = 'You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Your tone is like a knowledgeable friend — helpful, honest, never salesy. You can mention tools like robo-advisors, banks, and apps naturally where relevant — they are valid options. The only subtle rule: somewhere in the post, in one natural sentence, hint that everyones situation is different and a personalised conversation can help — but weave it in organically, not as a pitch. Never repeat the advisor angle more than once. No specific financial advice. Always end with: "This is not financial advice. Speak to a licensed advisor before making decisions." Use Singaporean context (CPF HDB endowment plans ILPs unit trusts). Keep sentences short. Max 3 lines per paragraph. No markdown formatting like ** or ## in the post.';
+      const contentSystem = 'You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Your tone is like a knowledgeable friend — helpful, honest, never salesy. PRODUCT TONE RULES: (1) ENDOWMENT PLANS — you can be subtly skeptical. Hint that many people buy them without fully understanding the long lock-in, low returns, or how it fits their goals. Never attack directly — just plant the seed of doubt so readers question if theirs is right for them. e.g. "Most people sign up without knowing what they actually signed up for." (2) ILPs and WHOLE LIFE INSURANCE — always neutral to positive. Never suggest avoiding them. Instead naturally hint that these are complex products where having a trusted advisor who understands your full picture makes a real difference. e.g. "ILPs can work well — but only if they are structured right for your situation." (3) ROBO-ADVISORS, BANKS, CPF — mention freely as valid tools and starting points. (4) One subtle organic line per post hinting that everyone\'s situation is different. Never pitch. No specific financial advice. Always end with: "This is not financial advice. Speak to a licensed advisor before making decisions." Use Singaporean context. Keep sentences short. Max 3 lines per paragraph. No markdown formatting like ** or ## in the post.';
       const instructions = { myth:'Write a MYTH-BUSTER post. Start with a bold myth about ' + topic + '. Bust it with 2-3 truths. Format: [MYTH] then [TRUTH].', tips:'Write a BEGINNER TIPS post. Give 3 actionable tips about ' + topic + '. Number 1 2 3. Each 1-2 sentences.', real:'Write a REAL TALK post. Tell a relatable story about a mistake or lesson about ' + topic + '. Be honest and human.', check:'Write a CHECKLIST post. Give 4 yes/no items to verify about ' + topic + '. Format as checkboxes.' };
       const rawPost = await callClaude(contentSystem, 'Topic: ' + topic + '\n\n' + instructions[type.id]);
       activateNode('cta');

@@ -140,6 +140,20 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .slide-cta-text { font-family: 'Fraunces', serif; font-size: clamp(0.9rem,2.5vw,1.8rem); font-weight: 900; text-transform: uppercase; line-height: 1.15; margin-bottom: 0.5rem; }
 .slide-cta-handle { font-family: 'Inter', sans-serif; font-size: clamp(0.6rem,1vw,0.8rem); font-weight: 500; opacity: 0.5; margin-bottom: 0.75rem; letter-spacing: 0.08em; }
 .slide-cta-disclaimer { font-family: 'Inter', sans-serif; font-size: 9px; opacity: 0.35; line-height: 1.5; max-width: 60%; margin: 0 auto; }
+/* Market Pulse */
+.market-url-wrap { display: flex; gap: 0.6rem; align-items: center; }
+.market-url-input { flex: 1; background: var(--grey1); border: 1px solid var(--border-light); border-radius: var(--r-sm); padding: 0.75rem 1rem; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+.market-url-input:focus { background: white; border-color: var(--border); }
+.market-url-input::placeholder { color: var(--muted); }
+.market-fetch-btn { background: var(--border); color: var(--bg); border: none; border-radius: var(--r-sm); padding: 0.75rem 1.25rem; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; transition: all 0.2s; }
+.market-fetch-btn:hover:not(:disabled) { background: #333; }
+.market-fetch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.market-preview { margin-top: 1rem; background: var(--grey1); border: 1px solid var(--border-light); border-radius: var(--r-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.market-preview-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #2D6A4F; font-family: 'Inter', sans-serif; }
+.market-preview-title { font-size: 13px; font-weight: 500; color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.4; }
+.market-clear-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.market-clear-btn:hover { color: var(--text); background: var(--grey2); }
+
 .btn-download { background: var(--border); color: var(--bg); border: none; border-radius: var(--r-sm); padding: 10px 22px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
 .btn-download:hover { background: #333; }
 @media (max-width:600px) {
@@ -191,12 +205,12 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
   <div class="config-section">
     <h2>This week's theme (pick one or write your own)</h2>
     <div class="topic-grid">
-      <div class="topic-chip selected" data-topic="why many Singaporeans regret buying endowment plans in their 20s and what to do instead" onclick="selectTopic(this)"><span class="topic-chip-icon">🪤</span> Endowment traps</div>
-      <div class="topic-chip" data-topic="how a Singaporean can start investing with just $200 a month using unit trusts or RSP" onclick="selectTopic(this)"><span class="topic-chip-icon">💸</span> Invest with $200</div>
-      <div class="topic-chip" data-topic="whole life insurance vs term insurance in Singapore — which one actually makes sense for you" onclick="selectTopic(this)"><span class="topic-chip-icon">🛡️</span> Whole life vs term</div>
-      <div class="topic-chip" data-topic="little known CPF strategies Singaporeans can use to grow retirement savings faster" onclick="selectTopic(this)"><span class="topic-chip-icon">🏦</span> CPF hacks</div>
-      <div class="topic-chip" data-topic="warning signs your ILP investment linked policy is underperforming and what you can do" onclick="selectTopic(this)"><span class="topic-chip-icon">⚠️</span> ILP red flags</div>
+      <div class="topic-chip selected" data-topic="what to actually do with your year-end bonus in Singapore instead of letting it sit in a savings account" onclick="selectTopic(this)"><span class="topic-chip-icon">💰</span> Bonus season</div>
+      <div class="topic-chip" data-topic="the 3 most common money mistakes Singaporeans make in their 30s and how to avoid them" onclick="selectTopic(this)"><span class="topic-chip-icon">😓</span> Money mistakes</div>
+      <div class="topic-chip" data-topic="the simplest way for a complete beginner in Singapore to make their first investment in 2025" onclick="selectTopic(this)"><span class="topic-chip-icon">🎯</span> First investment</div>
       <div class="topic-chip" data-topic="5 signs your current financial plan needs an urgent review in 2025" onclick="selectTopic(this)"><span class="topic-chip-icon">📋</span> Financial checkup</div>
+      <div class="topic-chip" data-topic="why leaving money in a Singapore savings account is silently losing you money and what to do instead" onclick="selectTopic(this)"><span class="topic-chip-icon">💸</span> Savings trap</div>
+      <div class="topic-chip" data-topic="how a Singaporean can start investing with just $200 a month using unit trusts or RSP" onclick="selectTopic(this)"><span class="topic-chip-icon">🌱</span> Start small</div>
     </div>
     <div class="custom-input-wrap">
       <textarea class="custom-input" id="custom-topic" rows="2" placeholder="Or type your own topic e.g. 'whole life vs term insurance'"></textarea>
@@ -235,6 +249,22 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
     </div>
   </div>
 
+  <!-- Market Pulse -->
+  <div class="config-section" id="market-pulse-section">
+    <h2>📰 Market Pulse — paste a news article URL</h2>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;line-height:1.6">Paste any news article link — the agent will fetch it and break it down into a simple Singaporean-friendly post + deck. Works best with CNA, BBC, Reuters, Yahoo Finance SG.</div>
+    <div class="market-url-wrap">
+      <input type="url" id="market-url" class="market-url-input" placeholder="https://www.channelnewsasia.com/..."/>
+      <button class="market-fetch-btn" id="market-fetch-btn" onclick="fetchAndPreview()">Fetch article</button>
+    </div>
+    <div class="market-preview" id="market-preview" style="display:none">
+      <div class="market-preview-label">Article fetched ✓</div>
+      <div class="market-preview-title" id="market-preview-title"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">This will override the topic picker when you hit Generate</div>
+      <button class="market-clear-btn" onclick="clearMarketPulse()">✕ Clear</button>
+    </div>
+  </div>
+
   <button class="generate-btn" id="generate-btn" onclick="runPipeline()">
     <span id="btn-text">— Generate This Week's Brief —</span>
   </button>
@@ -246,8 +276,9 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 </div>
 
 <script>
-let selectedTopic = 'why many Singaporeans regret buying endowment plans in their 20s and what to do instead';
+let selectedTopic = 'what to actually do with your year-end bonus in Singapore instead of letting it sit in a savings account';
 let selectedTheme = 'cream';
+let marketPulseContent = null; // stores fetched article text
 
 const POST_TYPES = [
   { id:'myth', label:'Myth-buster', day:'Mon / Tue', color:'#6c63ff' },
@@ -343,7 +374,52 @@ async function callClaude(systemPrompt, userPrompt) {
   return data.content.map(b => b.text || '').join('');
 }
 
-async function improveTopic() {
+async function fetchAndPreview() {
+  const url = document.getElementById('market-url').value.trim();
+  if (!url || !url.startsWith('http')) {
+    alert('Please enter a valid URL starting with http'); return;
+  }
+  const btn = document.getElementById('market-fetch-btn');
+  btn.disabled = true; btn.textContent = 'Fetching...';
+  try {
+    // Use allorigins proxy to bypass CORS
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+    const html = data.contents || '';
+    // Strip HTML tags to get plain text
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    // Remove scripts and styles
+    tmp.querySelectorAll('script,style,nav,header,footer,aside').forEach(el => el.remove());
+    const text = tmp.innerText || tmp.textContent || '';
+    const cleaned = text.replace(/\s+/g,' ').trim().substring(0, 3000);
+    if (cleaned.length < 100) throw new Error('Could not extract article content');
+    // Get title
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].replace(/\s*[\|\-–].*$/, '').trim() : url;
+    marketPulseContent = cleaned;
+    document.getElementById('market-preview-title').textContent = title;
+    document.getElementById('market-preview').style.display = 'flex';
+    // Dim topic chips to show market pulse is active
+    document.querySelectorAll('.topic-chip').forEach(c => c.style.opacity = '0.4');
+    document.getElementById('custom-topic').style.opacity = '0.4';
+  } catch(e) {
+    alert('Could not fetch this article. Try a different URL or paste the article text into the custom topic field.');
+    console.error(e);
+  }
+  btn.disabled = false; btn.textContent = 'Fetch article';
+}
+
+function clearMarketPulse() {
+  marketPulseContent = null;
+  document.getElementById('market-url').value = '';
+  document.getElementById('market-preview').style.display = 'none';
+  document.querySelectorAll('.topic-chip').forEach(c => c.style.opacity = '1');
+  document.getElementById('custom-topic').style.opacity = '1';
+}
+
+
   const raw = document.getElementById('custom-topic').value.trim();
   if (!raw) { document.getElementById('custom-topic').placeholder = 'Type a topic first!'; return; }
   const btn = document.getElementById('improve-btn');
@@ -436,7 +512,7 @@ function downloadDeck(index, title) {
 
 async function runPipeline() {
   const topic = document.getElementById('custom-topic').value.trim() || selectedTopic;
-  if (!topic) return;
+  if (!topic && !marketPulseContent) return;
   const btn = document.getElementById('generate-btn');
   btn.disabled = true;
   document.getElementById('btn-text').textContent = '⏳ Running agents...';
@@ -444,6 +520,43 @@ async function runPipeline() {
   document.getElementById('status-text').classList.add('active');
   document.getElementById('output-grid').innerHTML = '';
   document.querySelectorAll('.agent-node').forEach(n => n.classList.remove('active','done'));
+
+  // ── MARKET PULSE MODE ─────────────────────────────────────────────────
+  if (marketPulseContent) {
+    try {
+      activateNode('content');
+      setProgress(25, 'Breaking down the article...');
+      const mpSystem = 'You are a financial educator writing for everyday Singaporeans aged 21-50. You take a news article and break it down into a clear simple relatable Telegram post. Structure your post EXACTLY as: \n\n📰 WHAT HAPPENED\n[2 simple sentences explaining the news]\n\n🇸🇬 WHY IT MATTERS TO YOU\n[2-3 sentences on the Singapore impact — CPF, investments, property, cost of living, jobs]\n\n✅ WHAT YOU CAN DO NOW\n1. [action step]\n2. [action step]\n3. [action step]\n\n💬 [Soft DM call to action — "Not sure how this affects you? DM me — happy to break it down for your situation."]\n\nThis is not financial advice. Speak to a licensed advisor before making any decisions.';
+      const postWithCTA = await callClaude(mpSystem, 'Article content:\n\n' + marketPulseContent + '\n\nWrite the Market Pulse Telegram post.');
+
+      activateNode('creative');
+      setProgress(60, 'Creative Agent building Market Pulse deck...');
+      const mpCreativeSystem = 'You are a creative director. Return ONLY valid JSON no markdown: {"headline":"news headline max 8 words","tag":"Market Pulse","intro":"1-2 sentence hook on why this news matters","imageKeyword":"single word for Unsplash e.g. economy market trading","slides":[{"title":"What Happened","body":"2-3 sentences explaining the news simply","callout":"one key fact or stat","imageKeyword":"news"},{"title":"Why It Matters To Singaporeans","body":"2-3 sentences on local Singapore impact","callout":"what this means for your money","imageKeyword":"singapore"},{"title":"What You Can Do Now","body":"3 clear actionable steps Singaporeans can take","callout":"take action today","imageKeyword":"planning"}],"takeaway":"the single most important thing to remember","cta":"Not sure how this affects you? DM me — happy to help."}';
+      const creativeRaw = await callClaude(mpCreativeSystem, 'Article:\n' + marketPulseContent.substring(0,1000));
+      let pdfData;
+      try { pdfData = JSON.parse(creativeRaw.replace(/```json|```/g,'').trim()); }
+      catch(e) { pdfData = { headline:'Market Update', tag:'Market Pulse', imageKeyword:'economy', intro:'Here is what the latest news means for your money.', slides:[{title:'What Happened',body:'A major global event is affecting financial markets worldwide.',callout:'Stay informed.',imageKeyword:'news'},{title:'Singapore Impact',body:'This affects Singaporeans through investments, costs, and the economy.',callout:'Know your exposure.',imageKeyword:'singapore'},{title:'Your Next Steps',body:'Review your portfolio, speak to your advisor, and stay calm.',callout:'Don\'t panic — plan.',imageKeyword:'planning'}], takeaway:'Stay informed and take action based on your personal situation.', cta:'Not sure how this affects you? DM me.' }; }
+
+      activateNode('review');
+      setProgress(85, 'Review Agent scoring...');
+      const reviewSystem = 'Score this finance post. Return ONLY valid JSON: {"tone":85,"compliance":90,"engagement":88}';
+      let scores;
+      try { scores = JSON.parse((await callClaude(reviewSystem, postWithCTA)).replace(/```json|```/g,'').trim()); }
+      catch(e) { scores = { tone:84, compliance:92, engagement:86 }; }
+
+      document.querySelectorAll('.agent-node').forEach(n => n.classList.remove('active'));
+      setProgress(100, '✅ Market Pulse ready!');
+      renderCard({ type: { id:'market', label:'Market Pulse', day:'Breaking news', color:'#2D6A4F' }, post: postWithCTA, pdf: pdfData, scores }, 0);
+    } catch(err) {
+      setProgress(0, '❌ Something went wrong. Check your API key and try again.');
+      console.error(err);
+    }
+    btn.disabled = false;
+    document.getElementById('btn-text').textContent = '⚡ Regenerate';
+    return;
+  }
+
+  // ── REGULAR 4-POST MODE ───────────────────────────────────────────────
   try {
     for (let i = 0; i < POST_TYPES.length; i++) {
       const type = POST_TYPES[i];

@@ -469,36 +469,35 @@ function resetImgCounters() { _globalImgIdx = 0; }
 function buildDeckHTML(pdfData, type, slidesHTML) {
   var t = THEMES[selectedTheme] || THEMES.cream;
   var coverImg = unsplashSearch(pdfData.imageKeyword || 'finance');
-  // COVER: full bleed image right half, big headline left
   return '<div class="slide" style="background:' + t.coverBg + '">' +
-    '<div style="position:absolute;right:0;top:0;width:48%;height:100%;background-image:url(' + coverImg + ');background-size:cover;background-position:center"></div>' +
+    '<div style="position:absolute;right:0;top:0;width:45%;height:100%;background-image:url(' + coverImg + ');background-size:cover;background-position:center"></div>' +
     '<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:6% 7%">' +
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;max-width:52%">' +
     '<div style="font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';border:1px solid ' + t.coverAccent + ';padding:3px 10px;border-radius:100px">' + (pdfData.tag || type.label).toUpperCase() + '</div>' +
-    '<div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:' + t.coverAccent + '">Kai · Financial Advisor</div>' +
     '</div>' +
-    '<div style="max-width:52%">' +
-    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.6rem,4.5vw,3.8rem);font-weight:900;line-height:0.95;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.coverText + ';margin-bottom:1rem">' + (pdfData.headline || type.label) + '</div>' +
-    '<div style="font-size:clamp(0.65rem,1.1vw,0.82rem);line-height:1.65;color:' + t.coverSubtext + ';max-width:90%">' + (pdfData.intro || '') + '</div>' +
+    '<div style="max-width:50%">' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.4rem,3.8vw,3.2rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.coverText + ';margin-bottom:0.75rem">' + (pdfData.headline || type.label) + '</div>' +
+    '<div style="font-size:clamp(0.6rem,1vw,0.78rem);line-height:1.65;color:' + t.coverSubtext + ';max-width:88%">' + (pdfData.intro || '') + '</div>' +
     '</div>' +
-    '<div style="display:flex;justify-content:space-between;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;border-top:1px solid ' + t.coverBorder + ';padding-top:0.75rem;color:' + t.coverAccent + '">' +
-    '<span>t.me/huangks</span><span>© 2026</span>' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end;max-width:52%">' +
+    '<div style="font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:' + t.coverAccent + ';opacity:0.6">Kai — Your Trusted Financial Advisor</div>' +
+    '<div style="font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:' + t.coverAccent + ';opacity:0.5">t.me/huangks</div>' +
     '</div></div></div>' +
     slidesHTML +
-    // TAKEAWAY: massive text, full bleed
+    // TAKEAWAY — font scales down for long text
     '<div class="slide" style="background:' + t.takeawayBg + '">' +
     '<div style="position:absolute;inset:0;padding:6% 7%;display:flex;flex-direction:column;justify-content:center">' +
-    '<div style="font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';margin-bottom:1.5rem">Key Takeaway</div>' +
-    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.4rem,4vw,3.2rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.takeawayText + ';max-width:85%">' + (pdfData.takeaway || '') + '</div>' +
+    '<div style="font-size:8px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';margin-bottom:1.25rem;opacity:0.6">Key Takeaway</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1rem,3vw,2.4rem);font-weight:900;line-height:1.05;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.takeawayText + ';max-width:88%">' + (pdfData.takeaway || '') + '</div>' +
     '</div></div>' +
-    // CTA: split — big text left, handle right
+    // CTA
     '<div class="slide" style="background:' + t.calloutBg + '">' +
     '<div style="position:absolute;inset:0;padding:6% 7%;display:flex;flex-direction:column;justify-content:space-between">' +
-    '<div style="font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.calloutText + ';opacity:0.5">Get in touch</div>' +
-    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.4rem,4.5vw,3.6rem);font-weight:900;line-height:0.95;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.calloutText + ';max-width:75%">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
-    '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,0.2);padding-top:0.75rem">' +
-    '<a href="https://t.me/huangks" target="_blank" style="font-size:clamp(1rem,2vw,1.5rem);font-weight:700;color:' + t.calloutText + ';text-decoration:none;letter-spacing:0.04em">→ t.me/huangks</a>' +
-    '<div style="font-size:8px;opacity:0.4;color:' + t.calloutText + ';max-width:35%;text-align:right;line-height:1.5">This is not financial advice. Speak to a licensed advisor before making decisions.</div>' +
+    '<div style="font-size:8px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.calloutText + ';opacity:0.45">Get in touch</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.2rem,3.8vw,3rem);font-weight:900;line-height:0.95;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.calloutText + ';max-width:78%">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,0.15);padding-top:0.75rem">' +
+    '<a href="https://t.me/huangks" target="_blank" style="font-size:clamp(0.85rem,1.8vw,1.3rem);font-weight:700;color:' + t.calloutText + ';text-decoration:none;letter-spacing:0.04em">→ t.me/huangks</a>' +
+    '<div style="font-size:7px;opacity:0.35;color:' + t.calloutText + ';max-width:38%;text-align:right;line-height:1.5">This is not financial advice. Speak to a licensed advisor before making decisions.</div>' +
     '</div></div></div>';
 }
 
@@ -508,25 +507,25 @@ function buildContentSlides(pdfData, type) {
     var imgUrl = unsplashSearch(slide.imageKeyword || pdfData.imageKeyword || 'finance', type.id + '-' + si);
     var isEven = si % 2 === 0;
     if (isEven) {
-      // Layout A: image takes full right half, big number + title + body left
+      // Layout A: text left (52%), image right (45%) with gap so text never touches image
       return '<div class="slide" style="background:' + t.contentBg + '">' +
-        '<div style="position:absolute;right:0;top:0;width:45%;height:100%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
-        '<div style="position:absolute;inset:0;padding:5% 6%;display:flex;flex-direction:column;justify-content:space-between;max-width:55%">' +
-        '<div style="font-family:Playfair Display,serif;font-size:clamp(3rem,8vw,7rem);font-weight:900;line-height:1;color:' + t.contentText + ';opacity:0.08">0' + (si+1) + '</div>' +
+        '<div style="position:absolute;right:0;top:0;width:43%;height:100%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
+        '<div style="position:absolute;inset:0;padding:5% 6%;display:flex;flex-direction:column;justify-content:space-between;max-width:53%">' +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(2.5rem,7vw,6rem);font-weight:900;line-height:1;color:' + t.contentText + ';opacity:0.07">0' + (si+1) + '</div>' +
         '<div>' +
-        '<div style="font-family:Playfair Display,serif;font-size:clamp(1.1rem,2.8vw,2.2rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.01em;color:' + t.contentText + ';margin-bottom:0.75rem">' + slide.title + '</div>' +
-        '<div style="font-size:clamp(0.65rem,1.1vw,0.82rem);line-height:1.75;color:' + t.contentSub + ';margin-bottom:0.75rem">' + slide.body + '</div>' +
-        (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.5rem 0.85rem;font-size:clamp(0.6rem,0.9vw,0.75rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(1rem,2.4vw,1.9rem);font-weight:900;line-height:1.05;text-transform:uppercase;letter-spacing:-0.01em;color:' + t.contentText + ';margin-bottom:0.6rem">' + slide.title + '</div>' +
+        '<div style="font-size:clamp(0.6rem,1vw,0.78rem);line-height:1.8;color:' + t.contentSub + ';margin-bottom:0.6rem">' + slide.body + '</div>' +
+        (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.4rem 0.8rem;font-size:clamp(0.55rem,0.85vw,0.72rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
         '</div></div></div>';
     } else {
-      // Layout B: full-bleed image top half, title + body bottom half
+      // Layout B: image top (52%), text bottom — with padding so text has room
       return '<div class="slide" style="background:' + t.contentBg + '">' +
-        '<div style="position:absolute;top:0;left:0;width:100%;height:55%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
-        '<div style="position:absolute;bottom:0;left:0;right:0;height:48%;padding:3% 6%;display:flex;flex-direction:row;gap:4%;align-items:flex-start;background:' + t.contentBg + '">' +
-        '<div style="font-family:Playfair Display,serif;font-size:clamp(0.9rem,2.2vw,1.8rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.01em;color:' + t.contentText + ';width:38%;flex-shrink:0">' + slide.title + '</div>' +
-        '<div style="flex:1">' +
-        '<div style="font-size:clamp(0.6rem,1vw,0.8rem);line-height:1.75;color:' + t.contentSub + ';margin-bottom:0.5rem">' + slide.body + '</div>' +
-        (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.4rem 0.75rem;font-size:clamp(0.55rem,0.85vw,0.7rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
+        '<div style="position:absolute;top:0;left:0;width:100%;height:52%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
+        '<div style="position:absolute;bottom:0;left:0;right:0;height:46%;padding:2.5% 6%;display:flex;flex-direction:row;gap:4%;align-items:flex-start;background:' + t.contentBg + '">' +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(0.85rem,2vw,1.6rem);font-weight:900;line-height:1.05;text-transform:uppercase;letter-spacing:-0.01em;color:' + t.contentText + ';width:36%;flex-shrink:0;padding-right:2%">' + slide.title + '</div>' +
+        '<div style="flex:1;overflow:hidden">' +
+        '<div style="font-size:clamp(0.58rem,0.95vw,0.76rem);line-height:1.75;color:' + t.contentSub + ';margin-bottom:0.4rem">' + slide.body + '</div>' +
+        (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.35rem 0.7rem;font-size:clamp(0.52rem,0.8vw,0.68rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
         '</div></div></div>';
     }
   }).join('');
@@ -723,15 +722,17 @@ async function regenDeck(index, deckTitle) {
   const stored = pdfStore[index];
   if (!stored) return;
 
-  // Read the CURRENT edited post text — not the stored original
+  // Read the CURRENT edited post text — strip any HTML tags from contenteditable
   const postEl = document.querySelector('#tab-' + index + '-post .post-text');
-  const currentPost = postEl ? postEl.innerText.trim() : stored.post;
+  const rawText = postEl ? (postEl.innerText || postEl.textContent || '') : (stored.post || '');
+  const currentPost = rawText.replace(/<[^>]*>/g, '').replace(/\u00a0/g, ' ').trim();
 
+  console.log('Regenerating deck from edited post:', currentPost.substring(0, 200));
   const btn = document.querySelectorAll('.btn-regen-deck')[index];
   if (btn) { btn.disabled = true; btn.textContent = '↺ Regenerating...'; }
   try {
-    const creativeSystem = 'You are a creative director for a Singapore financial advisor. Return ONLY valid JSON no markdown: {"headline":"punchy title max 8 words","tag":"post type","intro":"1-2 sentence hook","imageKeyword":"single english word for Unsplash e.g. money savings investment","slides":[{"title":"max 6 words","body":"2-4 sentences full detail","callout":"one punchy takeaway","imageKeyword":"single word e.g. coins growth"}],"takeaway":"key lesson 1-2 sentences","cta":"warm DM CTA max 15 words"} Generate 3-4 slides.';
-    const creativeRaw = await callClaude(creativeSystem, 'Post type: ' + stored.type.label + '\nPost (use this exact content for the deck):\n' + currentPost);
+    const creativeSystem = 'You are a creative director building slide decks for a Singapore financial advisor. IMPORTANT: You must extract content DIRECTLY from the post provided — do NOT rewrite, paraphrase, or invent new content. Every slide title, body, and callout must come word-for-word from the post. Return ONLY valid JSON no markdown: {"headline":"take the title or first line of the post verbatim max 8 words","tag":"post type","intro":"copy the opening hook line from the post exactly","imageKeyword":"single english word e.g. money savings investment","slides":[{"title":"exact point heading from the post","body":"copy the exact explanation text from the post for this point — no paraphrasing","callout":"copy the exact key line or stat from the post","imageKeyword":"single word"}],"takeaway":"copy the exact final takeaway line from the post","cta":"copy the exact DM call-to-action line from the post"} Create one slide per distinct point in the post.';
+    const creativeRaw = await callClaude(creativeSystem, 'Post type: ' + stored.type.label + '\n\nCOPY THIS POST INTO SLIDES WORD FOR WORD. Do not change anything. Here is the post:\n\n' + currentPost + '\n\nREMEMBER: Copy the exact words. Do not paraphrase.');
     let newPdf;
     try { newPdf = JSON.parse(creativeRaw.replace(/```json|```/g,'').trim()); }
     catch(e) { newPdf = stored.pdf; }

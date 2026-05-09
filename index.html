@@ -163,6 +163,50 @@
   .empty-state { text-align: center; padding: 4rem 1rem; color: var(--muted); font-size: 13px; border: 1.5px dashed var(--border-light); border-radius: var(--radius-lg); font-family: 'Inter', sans-serif; letter-spacing: 0.04em; background: var(--surface); }
   .empty-icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.3; }
 
+  /* Theme picker */
+  .theme-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+
+  .theme-chip {
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-md);
+    overflow: hidden; cursor: pointer;
+    transition: all 0.2s; background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .theme-chip:hover { border-color: var(--border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .theme-chip.selected { border-color: var(--border); box-shadow: var(--shadow-md); }
+
+  .theme-preview {
+    height: 56px; width: 100%;
+  }
+
+  .theme-info { padding: 0.6rem 0.75rem 0.4rem; }
+
+  .theme-name {
+    font-family: 'Fraunces', serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--text); text-transform: uppercase;
+    letter-spacing: 0.04em; margin-bottom: 2px;
+  }
+
+  .theme-desc { font-size: 10px; color: var(--muted); font-family: 'Inter', sans-serif; }
+
+  .theme-check {
+    display: none; text-align: center;
+    font-size: 11px; font-weight: 700;
+    color: var(--text); padding: 0.3rem;
+    background: var(--grey1);
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.06em;
+  }
+
+  .theme-chip.selected .theme-check { display: block; }
+
+  @media (max-width: 600px) {
+    .theme-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
   .deck-preview { display: flex; flex-direction: column; gap: 0; border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }
   .deck-slide { padding: 2rem 2.5rem; font-family: 'Inter', sans-serif; }
   .cover-slide { background: #1C1C1C; color: #F5F0E8; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -294,6 +338,45 @@
     </div>
   </div>
 
+  <!-- Theme Picker -->
+  <div class="config-section" style="margin-top: 0.75rem;">
+    <h2>Deck theme — choose your visual style</h2>
+    <div class="theme-grid">
+      <div class="theme-chip selected" data-theme="cream" onclick="selectTheme(this)">
+        <div class="theme-preview" style="background: linear-gradient(135deg, #F5F0E8 50%, #1C1C1C 50%)"></div>
+        <div class="theme-info">
+          <div class="theme-name">Cream & Black</div>
+          <div class="theme-desc">Clean editorial</div>
+        </div>
+        <div class="theme-check">✓</div>
+      </div>
+      <div class="theme-chip" data-theme="slate" onclick="selectTheme(this)">
+        <div class="theme-preview" style="background: linear-gradient(135deg, #FFFFFF 50%, #4A5568 50%)"></div>
+        <div class="theme-info">
+          <div class="theme-name">Slate & White</div>
+          <div class="theme-desc">Corporate minimal</div>
+        </div>
+        <div class="theme-check">✓</div>
+      </div>
+      <div class="theme-chip" data-theme="terracotta" onclick="selectTheme(this)">
+        <div class="theme-preview" style="background: linear-gradient(135deg, #F5EDE8 50%, #C4614A 50%)"></div>
+        <div class="theme-info">
+          <div class="theme-name">Terracotta & Cream</div>
+          <div class="theme-desc">Bold, human</div>
+        </div>
+        <div class="theme-check">✓</div>
+      </div>
+      <div class="theme-chip" data-theme="sage" onclick="selectTheme(this)">
+        <div class="theme-preview" style="background: linear-gradient(135deg, #F4F7F2 50%, #5A7A5A 50%)"></div>
+        <div class="theme-info">
+          <div class="theme-name">Sage & Ivory</div>
+          <div class="theme-desc">Calm, approachable</div>
+        </div>
+        <div class="theme-check">✓</div>
+      </div>
+    </div>
+  </div>
+
   <button class="generate-btn" id="generate-btn" onclick="runPipeline()">
     <span id="btn-text">— Generate This Week's Brief —</span>
   </button>
@@ -320,7 +403,92 @@ const POST_TYPES = [
   { id: 'check', label: 'Checklist', day: 'Friday / Saturday', color: '#f5a623', dotColor: '#f5a623' },
 ];
 
-let selectedTopic = 'endowment plans in Singapore';
+let selectedTheme = 'cream';
+
+const THEMES = {
+  cream: {
+    name: 'Cream & Black',
+    coverBg: '#1C1C1C', coverText: '#F5F0E8', coverSubtext: 'rgba(245,240,232,0.65)', coverAccent: 'rgba(245,240,232,0.4)', coverBorder: 'rgba(245,240,232,0.12)',
+    contentBg: '#FAF8F3', contentText: '#1C1C1C', contentSub: '#3a3a3a', contentBorder: '#E8E3D8',
+    calloutBg: '#1C1C1C', calloutText: '#F5F0E8',
+    takeawayBg: '#2C2C2C', takeawayText: '#F5F0E8',
+    ctaBg: '#FAF8F3', ctaText: '#1C1C1C', ctaBorder: '#E8E3D8',
+    font: "'Playfair Display', serif"
+  },
+  slate: {
+    name: 'Slate & White',
+    coverBg: '#4A5568', coverText: '#FFFFFF', coverSubtext: 'rgba(255,255,255,0.7)', coverAccent: 'rgba(255,255,255,0.4)', coverBorder: 'rgba(255,255,255,0.15)',
+    contentBg: '#FFFFFF', contentText: '#2D3748', contentSub: '#4A5568', contentBorder: '#E2E8F0',
+    calloutBg: '#4A5568', calloutText: '#FFFFFF',
+    takeawayBg: '#2D3748', takeawayText: '#FFFFFF',
+    ctaBg: '#F7FAFC', ctaText: '#2D3748', ctaBorder: '#E2E8F0',
+    font: "'Playfair Display', serif"
+  },
+  terracotta: {
+    name: 'Terracotta & Cream',
+    coverBg: '#C4614A', coverText: '#FAF0EB', coverSubtext: 'rgba(250,240,235,0.7)', coverAccent: 'rgba(250,240,235,0.4)', coverBorder: 'rgba(250,240,235,0.15)',
+    contentBg: '#FAF0EB', contentText: '#3D1A10', contentSub: '#6B3020', contentBorder: '#EDD5C8',
+    calloutBg: '#C4614A', calloutText: '#FAF0EB',
+    takeawayBg: '#A04535', takeawayText: '#FAF0EB',
+    ctaBg: '#FAF0EB', ctaText: '#3D1A10', ctaBorder: '#EDD5C8',
+    font: "'Playfair Display', serif"
+  },
+  sage: {
+    name: 'Sage & Ivory',
+    coverBg: '#5A7A5A', coverText: '#F4F7F2', coverSubtext: 'rgba(244,247,242,0.7)', coverAccent: 'rgba(244,247,242,0.4)', coverBorder: 'rgba(244,247,242,0.15)',
+    contentBg: '#F4F7F2', contentText: '#1A2E1A', contentSub: '#3A5A3A', contentBorder: '#D4E4D4',
+    calloutBg: '#5A7A5A', calloutText: '#F4F7F2',
+    takeawayBg: '#3A5A3A', takeawayText: '#F4F7F2',
+    ctaBg: '#F4F7F2', ctaText: '#1A2E1A', ctaBorder: '#D4E4D4',
+    font: "'Playfair Display', serif"
+  }
+};
+
+function selectTheme(el) {
+  document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTheme = el.dataset.theme;
+}
+
+function buildDeckHTML(pdfData, type, slidesHTML, deckTitle) {
+  const t = THEMES[selectedTheme] || THEMES.cream;
+  return `
+    <div class="deck-slide cover-slide" style="background:${t.coverBg};color:${t.coverText}">
+      <div class="deck-tag" style="color:${t.coverAccent}">${(pdfData.tag || type.label).toUpperCase()}</div>
+      <div class="deck-cover-title" style="color:${t.coverText}">${pdfData.headline || type.label}</div>
+      <div class="deck-cover-intro" style="color:${t.coverSubtext}">${pdfData.intro || ''}</div>
+      <div class="deck-cover-footer" style="color:${t.coverAccent};border-top-color:${t.coverBorder}">
+        <span>By Kai · Financial Advisor</span>
+        <span>t.me/KaiFinance</span>
+      </div>
+    </div>
+    ${slidesHTML}
+    <div class="deck-slide takeaway-slide" style="background:${t.takeawayBg};color:${t.takeawayText}">
+      <div class="deck-takeaway-label" style="color:${t.coverAccent}">Key takeaway</div>
+      <div class="deck-takeaway-text" style="color:${t.takeawayText}">${pdfData.takeaway || ''}</div>
+    </div>
+    <div class="deck-slide cta-slide" style="background:${t.ctaBg};border-top-color:${t.ctaBorder}">
+      <div class="deck-cta-icon">💬</div>
+      <div class="deck-cta-text" style="color:${t.ctaText}">${pdfData.cta || 'DM me to learn more'}</div>
+      <div class="deck-cta-handle" style="color:${t.ctaText};opacity:0.6">t.me/KaiFinance</div>
+      <div class="deck-cta-disclaimer">This is not financial advice. Speak to a licensed advisor before making any decisions.</div>
+    </div>`;
+}
+
+function buildContentSlides(pdfData, type) {
+  const t = THEMES[selectedTheme] || THEMES.cream;
+  return (pdfData.slides || []).map((slide, si) => {
+    const calloutHTML = slide.callout ? `<div class="deck-callout" style="background:${t.calloutBg};color:${t.calloutText}">${slide.callout}</div>` : '';
+    return `<div class="deck-slide content-slide" style="background:${t.contentBg};color:${t.contentText};border-top-color:${t.contentBorder}">
+      <div class="deck-slide-num" style="color:${t.contentText};opacity:0.3">0${si+1}</div>
+      <div class="deck-slide-title" style="color:${t.contentText}">${slide.title}</div>
+      <div class="deck-slide-body" style="color:${t.contentSub}">${slide.body}</div>
+      ${calloutHTML}
+    </div>`;
+  }).join('');
+}
+
+
 
 function selectTopic(el) {
   document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('selected'));
@@ -567,12 +735,10 @@ function renderCard(result, index) {
   card.className = 'post-card';
   card.id = 'card-' + index;
 
-  const scoreColor = (v) => v >= 85 ? '#43e8a0' : v >= 70 ? '#f5a623' : '#ff6584';
+  const scoreColor = (v) => v >= 85 ? '#2D6A4F' : v >= 70 ? '#B7791F' : '#C0392B';
   const deckTitle = (pdf.headline || type.label).replace(/'/g, '');
-  const slidesHTML = (pdf.slides || []).map((slide, si) => {
-    const calloutHTML = slide.callout ? '<div class="deck-callout">' + slide.callout + '</div>' : '';
-    return '<div class="deck-slide content-slide"><div class="deck-slide-num">0' + (si+1) + '</div><div class="deck-slide-title">' + slide.title + '</div><div class="deck-slide-body">' + slide.body + '</div>' + calloutHTML + '</div>';
-  }).join('');
+  const slidesHTML = buildContentSlides(pdf, type);
+  const deckHTML = buildDeckHTML(pdf, type, slidesHTML, deckTitle);
 
   card.innerHTML = `
     <div class="card-header">
@@ -595,35 +761,7 @@ function renderCard(result, index) {
 
       <div class="tab-content" id="tab-${index}-pdf">
         <div class="deck-preview" id="deck-${index}">
-
-          <!-- Slide 1: Cover -->
-          <div class="deck-slide cover-slide">
-            <div class="deck-tag">${(pdf.tag || type.label).toUpperCase()}</div>
-            <div class="deck-cover-title">${pdf.headline || type.label}</div>
-            <div class="deck-cover-intro">${pdf.intro || ''}</div>
-            <div class="deck-cover-footer">
-              <span>By Kai · Financial Advisor</span>
-              <span>t.me/KaiFinance</span>
-            </div>
-          </div>
-
-          <!-- Content slides -->
-          ${slidesHTML}
-
-          <!-- Takeaway slide -->
-          <div class="deck-slide takeaway-slide">
-            <div class="deck-takeaway-label">Key takeaway</div>
-            <div class="deck-takeaway-text">${pdf.takeaway || ''}</div>
-          </div>
-
-          <!-- CTA slide -->
-          <div class="deck-slide cta-slide">
-            <div class="deck-cta-icon">💬</div>
-            <div class="deck-cta-text">${pdf.cta || 'DM me to learn more'}</div>
-            <div class="deck-cta-handle">t.me/KaiFinance</div>
-            <div class="deck-cta-disclaimer">This is not financial advice. Speak to a licensed advisor before making any decisions.</div>
-          </div>
-
+          ${deckHTML}
         </div>
         <div style="margin-top:0.75rem;display:flex;gap:0.75rem;align-items:center;justify-content:center;">
           <button class="btn-download" onclick="downloadDeck(${index}, '${deckTitle}')">⬇ Download deck as HTML</button>
@@ -663,6 +801,7 @@ function renderCard(result, index) {
 function downloadDeck(index, title) {
   const deckEl = document.getElementById('deck-' + index);
   if (!deckEl) return;
+  const t = THEMES[selectedTheme] || THEMES.cream;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -670,31 +809,31 @@ function downloadDeck(index, title) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${title}</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: #e8e4d8; padding: 2rem; }
+  body { font-family: 'Inter', sans-serif; background: #e8e4d8; padding: 2rem; }
   .deck { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
-  .deck-slide { padding: 2.5rem 3rem; page-break-inside: avoid; }
-  .cover-slide { background: #2D5016; color: #F5F0E8; min-height: 220px; display: flex; flex-direction: column; justify-content: space-between; border-radius: 12px; }
-  .deck-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #A8C97F; margin-bottom: 1rem; }
-  .deck-cover-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: #F5F0E8; line-height: 1.15; margin-bottom: 1rem; }
-  .deck-cover-intro { font-size: 14px; color: #C8D8B0; line-height: 1.7; margin-bottom: 1.5rem; }
-  .deck-cover-footer { display: flex; justify-content: space-between; font-size: 11px; color: #A8C97F; border-top: 1px solid rgba(168,201,127,0.25); padding-top: 1rem; }
-  .content-slide { background: #F5F0E8; border-left: 5px solid #2D5016; border-radius: 0 12px 12px 0; }
-  .deck-slide-num { font-size: 11px; font-weight: 700; color: #2D5016; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
-  .deck-slide-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: #1a2e0a; margin-bottom: 1rem; line-height: 1.3; }
-  .deck-slide-body { font-size: 14px; color: #2e3d1a; line-height: 1.8; margin-bottom: 1rem; }
-  .deck-callout { background: #2D5016; color: #F5F0E8; border-radius: 8px; padding: 0.75rem 1rem; font-size: 13px; font-weight: 500; line-height: 1.4; }
-  .takeaway-slide { background: #A8C97F; border-radius: 12px; }
-  .deck-takeaway-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #2D5016; margin-bottom: 0.6rem; }
-  .deck-takeaway-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: #1a2e0a; line-height: 1.45; }
-  .cta-slide { background: #F5F0E8; text-align: center; border-top: 4px solid #2D5016; border-radius: 12px; }
-  .deck-cta-icon { font-size: 32px; margin-bottom: 0.75rem; }
-  .deck-cta-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: #2D5016; margin-bottom: 0.5rem; line-height: 1.3; }
-  .deck-cta-handle { font-size: 14px; color: #2D5016; font-weight: 500; margin-bottom: 1rem; }
-  .deck-cta-disclaimer { font-size: 10px; color: #888; line-height: 1.6; max-width: 420px; margin: 0 auto; }
-  @media print { body { background: white; padding: 0; } .deck-slide { page-break-after: always; } }
+  .deck-slide { padding: 2.5rem 3rem; page-break-inside: avoid; border-radius: 12px; }
+  .cover-slide { background: ${t.coverBg}; color: ${t.coverText}; min-height: 220px; display: flex; flex-direction: column; justify-content: space-between; }
+  .deck-tag { font-size: 9px; font-weight: 600; letter-spacing: 0.2em; color: ${t.coverAccent}; margin-bottom: 1rem; text-transform: uppercase; font-family: 'Inter', sans-serif; }
+  .deck-cover-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: ${t.coverText}; line-height: 1.15; margin-bottom: 1rem; text-transform: uppercase; }
+  .deck-cover-intro { font-size: 14px; color: ${t.coverSubtext}; line-height: 1.7; margin-bottom: 1.5rem; font-family: 'Inter', sans-serif; }
+  .deck-cover-footer { display: flex; justify-content: space-between; font-size: 10px; color: ${t.coverAccent}; border-top: 1px solid ${t.coverBorder}; padding-top: 1rem; font-family: 'Inter', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; }
+  .content-slide { background: ${t.contentBg}; border-left: 4px solid ${t.calloutBg}; }
+  .deck-slide-num { font-size: 9px; font-weight: 600; color: ${t.contentText}; opacity: 0.3; letter-spacing: 0.15em; margin-bottom: 0.75rem; text-transform: uppercase; font-family: 'Inter', sans-serif; }
+  .deck-slide-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: ${t.contentText}; margin-bottom: 1rem; line-height: 1.3; text-transform: uppercase; }
+  .deck-slide-body { font-size: 14px; color: ${t.contentSub}; line-height: 1.8; margin-bottom: 1rem; font-family: 'Inter', sans-serif; }
+  .deck-callout { background: ${t.calloutBg}; color: ${t.calloutText}; border-radius: 8px; padding: 0.75rem 1rem; font-size: 13px; font-weight: 500; line-height: 1.4; font-family: 'Inter', sans-serif; }
+  .takeaway-slide { background: ${t.takeawayBg}; color: ${t.takeawayText}; }
+  .deck-takeaway-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; opacity: 0.5; margin-bottom: 0.6rem; font-family: 'Inter', sans-serif; }
+  .deck-takeaway-text { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.45; text-transform: uppercase; }
+  .cta-slide { background: ${t.ctaBg}; text-align: center; border-top: 3px solid ${t.calloutBg}; }
+  .deck-cta-icon { font-size: 28px; margin-bottom: 0.75rem; }
+  .deck-cta-text { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: ${t.ctaText}; margin-bottom: 0.5rem; line-height: 1.3; text-transform: uppercase; }
+  .deck-cta-handle { font-size: 13px; color: ${t.ctaText}; opacity: 0.5; font-weight: 500; margin-bottom: 1rem; font-family: 'Inter', sans-serif; }
+  .deck-cta-disclaimer { font-size: 10px; color: #888; line-height: 1.6; max-width: 420px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+  @media print { body { background: white; padding: 0; } .deck-slide { page-break-after: always; border-radius: 0; } }
 </style>
 </head>
 <body>

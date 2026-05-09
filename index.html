@@ -156,6 +156,8 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 
 .btn-download { background: var(--border); color: var(--bg); border: none; border-radius: var(--r-sm); padding: 10px 22px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
 .btn-download:hover { background: #333; }
+.btn-regen-deck { background: transparent; color: var(--text); border: 1px solid var(--border-light); border-radius: var(--r-sm); padding: 10px 18px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; }
+.btn-regen-deck:hover { border-color: var(--border); background: var(--grey1); }
 @media (max-width:600px) {
   .pipeline { grid-template-columns: repeat(2,1fr); }
   .topic-grid { grid-template-columns: 1fr; }
@@ -483,13 +485,23 @@ function downloadDeck(index, title) {
   var deckEl = document.getElementById('deck-' + index);
   if (!deckEl) return;
   var t = THEMES[selectedTheme] || THEMES.cream;
-  var css = '* {box-sizing:border-box;margin:0;padding:0} body {background:#fff;font-family:Inter,sans-serif} .deck {display:flex;flex-direction:column;gap:0} .slide {width:297mm;height:167mm;position:relative;overflow:hidden;page-break-after:always;display:block} .slide-inner {position:absolute;inset:0;padding:10mm 14mm;display:flex;flex-direction:column} .cover-inner {justify-content:space-between} .slide-tag {display:inline-block;font-size:7pt;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;border:1px solid;padding:2pt 8pt;border-radius:100px;margin-bottom:8mm;width:fit-content} .slide-cover-title {font-family:"Playfair Display",serif;font-size:26pt;font-weight:900;line-height:1.05;text-transform:uppercase;margin-bottom:5mm;max-width:65%} .slide-cover-intro {font-size:9pt;line-height:1.65;max-width:55%;opacity:0.8} .slide-cover-footer {display:flex;justify-content:space-between;font-size:7pt;letter-spacing:0.12em;text-transform:uppercase;border-top:1px solid;padding-top:3mm} .content-inner {flex-direction:row;gap:10mm;align-items:stretch} .slide-left {width:36%;display:flex;flex-direction:column;justify-content:space-between;padding:2mm 0} .slide-right {flex:1;display:flex;flex-direction:column;gap:4mm;justify-content:center} .slide-num {font-family:"Playfair Display",serif;font-size:52pt;font-weight:900;line-height:1;opacity:0.1} .slide-title {font-family:"Playfair Display",serif;font-size:14pt;font-weight:900;line-height:1.1;text-transform:uppercase} .slide-callout {padding:3mm 4mm;border-radius:4px;font-size:8pt;font-weight:600;line-height:1.4} .slide-img-wrap {width:100%;height:38mm;overflow:hidden;border-radius:4px} .slide-img {width:100%;height:100%;object-fit:cover} .slide-body {font-size:8.5pt;line-height:1.75} .takeaway-inner {justify-content:center} .slide-label {font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;opacity:0.45;margin-bottom:5mm} .slide-takeaway-text {font-family:"Playfair Display",serif;font-size:22pt;font-weight:900;line-height:1.15;text-transform:uppercase;max-width:80%} .cta-inner {justify-content:center;align-items:center;text-align:center;border-top:4px solid ' + t.calloutBg + '} .slide-cta-text {font-family:"Playfair Display",serif;font-size:20pt;font-weight:900;text-transform:uppercase;line-height:1.15;margin-bottom:3mm} .slide-cta-handle {font-size:9pt;opacity:0.55;margin-bottom:4mm} .slide-cta-disclaimer {font-size:7pt;opacity:0.35;line-height:1.5;max-width:55%;margin:0 auto} a {text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px} @media print {@page {size:A4 landscape;margin:0} .slide {width:297mm;height:210mm;page-break-after:always}}';
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>' + css + '</style></head><body onload="setTimeout(()=>window.print(),800)"><div class="deck">' + deckEl.innerHTML + '</div></body></html>';
+  var css = '* {box-sizing:border-box;margin:0;padding:0} body {background:#f0ece4;font-family:Inter,sans-serif} .save-bar {position:fixed;top:0;left:0;right:0;background:#1C1C1C;color:#F5F0E8;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;z-index:999;font-family:Inter,sans-serif} .save-bar-title {font-size:13px;font-weight:600;letter-spacing:0.04em} .save-bar-steps {font-size:11px;opacity:0.6;margin:0 1rem} .save-btn {background:#F5F0E8;color:#1C1C1C;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em} .save-btn:hover {background:#e8e4dc} .deck {margin-top:56px;display:flex;flex-direction:column;gap:8px;padding:16px;max-width:900px;margin-left:auto;margin-right:auto} .slide {width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:8px} .slide-inner {position:absolute;inset:0;padding:4% 5%;display:flex;flex-direction:column} .cover-inner {justify-content:space-between} .slide-tag {display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;border:1px solid;padding:4px 10px;border-radius:100px;margin-bottom:1rem;width:fit-content} .slide-cover-title {font-family:"Playfair Display",serif;font-size:clamp(1.2rem,3.5vw,2.8rem);font-weight:900;line-height:1.05;text-transform:uppercase;margin-bottom:0.75rem;max-width:65%} .slide-cover-intro {font-size:clamp(0.65rem,1.2vw,0.85rem);line-height:1.65;max-width:60%} .slide-cover-footer {display:flex;justify-content:space-between;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;border-top:1px solid;padding-top:0.75rem} .content-inner {flex-direction:row;gap:3rem;align-items:stretch} .slide-left {width:36%;display:flex;flex-direction:column;justify-content:space-between} .slide-right {flex:1;display:flex;flex-direction:column;gap:0.5rem;justify-content:center} .slide-num {font-family:"Playfair Display",serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;line-height:1;opacity:0.1} .slide-title {font-family:"Playfair Display",serif;font-size:clamp(0.9rem,2.2vw,1.6rem);font-weight:900;line-height:1.1;text-transform:uppercase} .slide-callout {padding:0.5rem 0.75rem;border-radius:8px;font-size:clamp(0.55rem,0.9vw,0.75rem);font-weight:600;line-height:1.4;margin-top:0.5rem} .slide-img-wrap {width:100%;height:32%;overflow:hidden;border-radius:6px} .slide-img {width:100%;height:100%;object-fit:cover;display:block} .slide-body {font-size:clamp(0.6rem,1.1vw,0.82rem);line-height:1.75} .takeaway-inner {justify-content:center} .slide-label {font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;opacity:0.45;margin-bottom:1rem} .slide-takeaway-text {font-family:"Playfair Display",serif;font-size:clamp(1rem,3vw,2.2rem);font-weight:900;line-height:1.15;text-transform:uppercase;max-width:80%} .cta-inner {justify-content:center;align-items:center;text-align:center} .slide-cta-text {font-family:"Playfair Display",serif;font-size:clamp(0.9rem,2.5vw,1.8rem);font-weight:900;text-transform:uppercase;line-height:1.15;margin-bottom:0.5rem} .slide-cta-handle {font-size:clamp(0.6rem,1vw,0.8rem);font-weight:500;opacity:0.5;margin-bottom:0.75rem;letter-spacing:0.08em} .slide-cta-disclaimer {font-size:9px;opacity:0.35;line-height:1.5;max-width:60%;margin:0 auto} a {text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px} @media print {.save-bar {display:none!important} body {background:white} .deck {margin-top:0;padding:0;max-width:100%} .slide {aspect-ratio:16/9;page-break-after:always;border-radius:0;width:100%} @page {size:A4 landscape;margin:0}}';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title>' +
+    '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">' +
+    '<style>' + css + '</style></head><body>' +
+    '<div class="save-bar">' +
+    '<span class="save-bar-title">📄 ' + title + '</span>' +
+    '<span class="save-bar-steps">① Click Save as PDF &nbsp;|&nbsp; ② Layout: Landscape &nbsp;|&nbsp; ③ Margins: None &nbsp;|&nbsp; ④ ✅ Background graphics</span>' +
+    '<button class="save-btn" onclick="window.print()">⬇ Save as PDF</button>' +
+    '</div>' +
+    '<div class="deck">' + deckEl.innerHTML + '</div>' +
+    '</body></html>';
+
   var blob = new Blob([html], {type:'text/html'});
   var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.html';
-  a.click(); URL.revokeObjectURL(url);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 async function runPipeline() {
@@ -586,6 +598,7 @@ function renderCard(result, index) {
   const sc = v => v >= 85 ? '#2D6A4F' : v >= 70 ? '#B7791F' : '#C0392B';
   const deckTitle = (pdf.headline || type.label).replace(/'/g,'');
   const deckInner = buildDeckHTML(pdf, type, buildContentSlides(pdf, type));
+  pdfStore[index] = { type, post, pdf };
   card.innerHTML = `<div class="card-header"><div class="card-type"><div class="type-dot"></div>${type.label}</div><div class="card-day">${type.day}</div></div>
     <div class="card-body">
       <div class="tabs">
@@ -593,12 +606,15 @@ function renderCard(result, index) {
         <button class="tab" onclick="switchTab(${index},'pdf',this)">Deck preview</button>
         <button class="tab" onclick="switchTab(${index},'score',this)">Review scores</button>
       </div>
-      <div class="tab-content active" id="tab-${index}-post"><div class="post-text">${post.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>
+      <div class="tab-content active" id="tab-${index}-post"><div class="post-text" contenteditable="true" spellcheck="true">${post.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><div style="font-size:11px;color:var(--muted);margin-top:0.5rem">✏️ Click to edit — then hit ↺ Regenerate deck to update slides</div></div>
       <div class="tab-content" id="tab-${index}-pdf">
         <div class="deck-preview" id="deck-${index}">${deckInner}</div>
-        <div style="margin-top:0.75rem;display:flex;gap:0.75rem;align-items:center;justify-content:center;">
+        <div style="margin-top:0.75rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;justify-content:center;">
           <button class="btn-download" onclick="downloadDeck(${index},'${deckTitle}')">⬇ Download deck</button>
-          <span style="font-size:12px;color:var(--muted)">Opens in new tab → print dialog auto-launches → Save as PDF</span>
+          <button class="btn-regen-deck" onclick="regenDeck(${index},'${deckTitle.replace(/'/g,"\\'")}')">↺ Regenerate deck</button>
+        </div>
+        <div style="margin-top:0.6rem;font-size:11px;color:var(--muted);text-align:center;line-height:1.6">
+          After opening: set Destination → <strong>Save as PDF</strong> · Layout → <strong>Landscape</strong> · Margins → <strong>None</strong> · tick <strong>Background graphics</strong>
         </div>
       </div>
       <div class="tab-content" id="tab-${index}-score">
@@ -619,7 +635,32 @@ function renderCard(result, index) {
   setTimeout(() => card.classList.add('visible'), 50);
 }
 
-function switchTab(cardIndex, tabName, btn) {
+const pdfStore = {};
+
+async function regenDeck(index, deckTitle) {
+  const stored = pdfStore[index];
+  if (!stored) return;
+
+  // Read the CURRENT edited post text — not the stored original
+  const postEl = document.querySelector('#tab-' + index + '-post .post-text');
+  const currentPost = postEl ? postEl.innerText.trim() : stored.post;
+
+  const btn = document.querySelectorAll('.btn-regen-deck')[index];
+  if (btn) { btn.disabled = true; btn.textContent = '↺ Regenerating...'; }
+  try {
+    const creativeSystem = 'You are a creative director for a Singapore financial advisor. Return ONLY valid JSON no markdown: {"headline":"punchy title max 8 words","tag":"post type","intro":"1-2 sentence hook","imageKeyword":"single english word for Unsplash e.g. money savings investment","slides":[{"title":"max 6 words","body":"2-4 sentences full detail","callout":"one punchy takeaway","imageKeyword":"single word e.g. coins growth"}],"takeaway":"key lesson 1-2 sentences","cta":"warm DM CTA max 15 words"} Generate 3-4 slides.';
+    const creativeRaw = await callClaude(creativeSystem, 'Post type: ' + stored.type.label + '\nPost (use this exact content for the deck):\n' + currentPost);
+    let newPdf;
+    try { newPdf = JSON.parse(creativeRaw.replace(/```json|```/g,'').trim()); }
+    catch(e) { newPdf = stored.pdf; }
+    pdfStore[index].pdf = newPdf;
+    const deckEl = document.getElementById('deck-' + index);
+    if (deckEl) deckEl.innerHTML = buildDeckHTML(newPdf, stored.type, buildContentSlides(newPdf, stored.type));
+  } catch(e) { console.error(e); }
+  if (btn) { btn.disabled = false; btn.textContent = '↺ Regenerate deck'; }
+}
+
+
   const card = document.getElementById('card-' + cardIndex);
   card.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   card.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -630,7 +671,7 @@ function switchTab(cardIndex, tabName, btn) {
 function copyPost(index) {
   const el = document.querySelector('#tab-' + index + '-post .post-text');
   if (!el) return;
-  navigator.clipboard.writeText(el.innerText).then(() => {
+  navigator.clipboard.writeText(el.innerText.trim()).then(() => {
     const btns = document.querySelectorAll('.btn-copy');
     if (btns[index]) { btns[index].textContent = '✓ Copied!'; setTimeout(() => btns[index].textContent = 'Copy post', 2000); }
   });

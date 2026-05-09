@@ -116,8 +116,8 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .approved-badge.show { opacity: 1; }
 .empty-state { text-align: center; padding: 4rem 1rem; color: var(--muted); font-size: 13px; border: 1.5px dashed var(--border-light); border-radius: var(--r-lg); font-family: 'Inter', sans-serif; background: var(--surface); }
 .empty-icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.3; }
-.deck-preview { display: flex; flex-direction: column; gap: 6px; border-radius: var(--r-md); overflow: hidden; }
-.slide { width: 100%; aspect-ratio: 16/9; position: relative; overflow: hidden; border-radius: 8px; }
+.deck-preview { display: flex; flex-direction: column; gap: 0; border-radius: var(--r-md); overflow: hidden; }
+.slide { width: 100%; aspect-ratio: 16/9; position: relative; overflow: hidden; border-radius: 0; }
 .slide-inner { position: absolute; inset: 0; padding: 2.5rem 3rem; display: flex; flex-direction: column; }
 .cover-inner { justify-content: space-between; }
 .slide-tag { display: inline-block; font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; border: 1px solid; padding: 4px 10px; border-radius: 100px; margin-bottom: 1rem; width: fit-content; }
@@ -209,8 +209,8 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
     <div class="topic-grid">
       <div class="topic-chip selected" data-topic="what to actually do with your year-end bonus in Singapore instead of letting it sit in a savings account" onclick="selectTopic(this)"><span class="topic-chip-icon">💰</span> Bonus season</div>
       <div class="topic-chip" data-topic="the 3 most common money mistakes Singaporeans make in their 30s and how to avoid them" onclick="selectTopic(this)"><span class="topic-chip-icon">😓</span> Money mistakes</div>
-      <div class="topic-chip" data-topic="the simplest way for a complete beginner in Singapore to make their first investment in 2025" onclick="selectTopic(this)"><span class="topic-chip-icon">🎯</span> First investment</div>
-      <div class="topic-chip" data-topic="5 signs your current financial plan needs an urgent review in 2025" onclick="selectTopic(this)"><span class="topic-chip-icon">📋</span> Financial checkup</div>
+      <div class="topic-chip" data-topic="the simplest way for a complete beginner in Singapore to make their first investment in 2026" onclick="selectTopic(this)"><span class="topic-chip-icon">🎯</span> First investment</div>
+      <div class="topic-chip" data-topic="5 signs your current financial plan needs an urgent review in 2026" onclick="selectTopic(this)"><span class="topic-chip-icon">📋</span> Financial checkup</div>
       <div class="topic-chip" data-topic="why leaving money in a Singapore savings account is silently losing you money and what to do instead" onclick="selectTopic(this)"><span class="topic-chip-icon">💸</span> Savings trap</div>
       <div class="topic-chip" data-topic="how a Singaporean can start investing with just $200 a month using unit trusts or RSP" onclick="selectTopic(this)"><span class="topic-chip-icon">🌱</span> Start small</div>
     </div>
@@ -421,96 +421,168 @@ function unsplashUrl(keyword, w, h) {
   return unsplashSearch(keyword, 'cover');
 }
 
-const _IMGS = {
-  money:      ['photo-1580519542036-c47de6196ba5','photo-1621981386829-9b458a2cddde','photo-1565514020179-026b92b84bb6'],
-  savings:    ['photo-1579621970563-ebec7560ff3e','photo-1554224154-26032ffc0d07','photo-1518458028785-8fbcd101ebb9'],
-  investment: ['photo-1611974789855-9c2a0a7236a3','photo-1590283603385-17ffb3a7f29f','photo-1642790106117-e829e14a795f'],
-  finance:    ['photo-1554224155-6726b3ff858f','photo-1460925895917-afdab827c52f','photo-1553729459-efe14ef6055d'],
-  retirement: ['photo-1559526324-593bc073d938','photo-1434030216411-0b793f4b4173','photo-1473186578172-c141e6798cf4'],
-  planning:   ['photo-1484981184820-2e84ea0af397','photo-1507679799987-c73779587ccf','photo-1542626991-cbc4e32524cc'],
-  coins:      ['photo-1618044733300-9472054094ee','photo-1561414927-6d86591d0c4f','photo-1624365169198-38255ba54160'],
-  growth:     ['photo-1543286386-713bdd548da4','photo-1504868584819-f8e8b4b6d7e3','photo-1535320903710-d993d3d77d29'],
-  chart:      ['photo-1611974789855-9c2a0a7236a3','photo-1551288049-bebda4e38f71','photo-1559523161-0fc0d8b814b4'],
-  family:     ['photo-1511895426328-dc8714191011','photo-1556742049-0cfed4f6a45d','photo-1484328671702-91ffb9e75fdb'],
-  singapore:  ['photo-1525625293386-3f8f99389edd','photo-1508964942454-1a56651d54ac','photo-1565967511849-76a60a516170'],
-  news:       ['photo-1504711434969-e33886168f5c','photo-1585829365295-ab7cd400c167','photo-1557607778-8ea1a3ceab8b'],
-  economy:    ['photo-1526304640581-d334cdbbf45e','photo-1444653614773-995cb1ef9efa','photo-1611974789855-9c2a0a7236a3'],
-  trading:    ['photo-1611974789855-9c2a0a7236a3','photo-1590283603385-17ffb3a7f29f','photo-1460925895917-afdab827c52f'],
-  insurance:  ['photo-1450101499163-c8848c66ca85','photo-1521791136064-7986c2920216','photo-1516321318423-f06f85e504b3'],
-  cpf:        ['photo-1559526324-593bc073d938','photo-1434030216411-0b793f4b4173','photo-1507679799987-c73779587ccf'],
-  default:    ['photo-1554224155-6726b3ff858f','photo-1460925895917-afdab827c52f','photo-1580519542036-c47de6196ba5'],
-};
-let _imgIdx = {};
+// 30 completely unique finance/lifestyle photos — cycled sequentially so no two slides ever repeat
+const _ALL_IMGS = [
+  'photo-1580519542036-c47de6196ba5', // money on table
+  'photo-1554224155-6726b3ff858f',     // calculator & coins
+  'photo-1579621970563-ebec7560ff3e', // piggy bank
+  'photo-1611974789855-9c2a0a7236a3', // stock chart
+  'photo-1460925895917-afdab827c52f', // laptop finance
+  'photo-1543286386-713bdd548da4',     // growth chart
+  'photo-1559526324-593bc073d938',     // retirement jar
+  'photo-1484981184820-2e84ea0af397', // planning notebook
+  'photo-1507679799987-c73779587ccf', // businessman
+  'photo-1618044733300-9472054094ee', // gold coins
+  'photo-1525625293386-3f8f99389edd', // singapore skyline
+  'photo-1504711434969-e33886168f5c', // newspaper
+  'photo-1526304640581-d334cdbbf45e', // economy graph
+  'photo-1450101499163-c8848c66ca85', // insurance policy
+  'photo-1511895426328-dc8714191011', // family
+  'photo-1542626991-cbc4e32524cc',     // planning desk
+  'photo-1434030216411-0b793f4b4173', // savings jar
+  'photo-1504868584819-f8e8b4b6d7e3', // growth plant money
+  'photo-1551288049-bebda4e38f71',     // data dashboard
+  'photo-1521791136064-7986c2920216', // handshake deal
+  'photo-1556742049-0cfed4f6a45d',     // family savings
+  'photo-1508964942454-1a56651d54ac', // singapore city
+  'photo-1585829365295-ab7cd400c167', // reading news
+  'photo-1444653614773-995cb1ef9efa', // economy street
+  'photo-1590283603385-17ffb3a7f29f', // trading screen
+  'photo-1553729459-efe14ef6055d',     // finance abstract
+  'photo-1518458028785-8fbcd101ebb9', // savings book
+  'photo-1535320903710-d993d3d77d29', // analytics
+  'photo-1565514020179-026b92b84bb6', // money notes
+  'photo-1484328671702-91ffb9e75fdb',  // family lifestyle
+];
+
+let _globalImgIdx = 0;
 
 function unsplashSearch(keyword, uniqueKey) {
-  const key = (keyword || 'finance').toLowerCase();
-  const pool = _IMGS[key] || _IMGS.default;
-  const ckey = uniqueKey || (key + Math.random());
-  if (_imgIdx[ckey] === undefined) _imgIdx[ckey] = Math.floor(Math.random() * pool.length);
-  const photo = pool[_imgIdx[ckey] % pool.length];
-  _imgIdx[ckey]++;
+  // Always return the next unique image in the sequence — no repeats
+  const photo = _ALL_IMGS[_globalImgIdx % _ALL_IMGS.length];
+  _globalImgIdx++;
   return 'https://images.unsplash.com/' + photo + '?w=800&q=80&auto=format&fit=crop';
 }
 
-function resetImgCounters() { _imgIdx = {}; }
+function resetImgCounters() { _globalImgIdx = 0; }
 
 function buildDeckHTML(pdfData, type, slidesHTML) {
   var t = THEMES[selectedTheme] || THEMES.cream;
   var coverImg = unsplashSearch(pdfData.imageKeyword || 'finance');
-  return '<div class="slide" style="background:' + t.coverBg + ';position:relative">' +
-    '<div style="position:absolute;inset:0;background-image:url(' + coverImg + ');background-size:cover;background-position:center;opacity:0.15"></div>' +
-    '<div class="slide-inner cover-inner" style="position:relative;z-index:1">' +
-    '<div class="slide-tag" style="color:' + t.coverAccent + ';border-color:' + t.coverAccent + '">' + (pdfData.tag || type.label).toUpperCase() + '</div>' +
-    '<div class="slide-cover-title" style="color:' + t.coverText + '">' + (pdfData.headline || type.label) + '</div>' +
-    '<div class="slide-cover-intro" style="color:' + t.coverSubtext + '">' + (pdfData.intro || '') + '</div>' +
-    '<div class="slide-cover-footer" style="color:' + t.coverAccent + ';border-top-color:' + t.coverBorder + '"><span>Kai · Financial Advisor</span><a href="https://t.me/huangks" target="_blank" style="color:' + t.coverAccent + ';text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px">t.me/huangks</a></div>' +
-    '</div></div>' + slidesHTML +
-    '<div class="slide" style="background:' + t.takeawayBg + '"><div class="slide-inner takeaway-inner">' +
-    '<div class="slide-label" style="color:' + t.coverAccent + '">Key Takeaway</div>' +
-    '<div class="slide-takeaway-text" style="color:' + t.takeawayText + '">' + (pdfData.takeaway || '') + '</div></div></div>' +
-    '<div class="slide" style="background:' + t.ctaBg + ';border-top:4px solid ' + t.calloutBg + '"><div class="slide-inner cta-inner">' +
-    '<div class="slide-cta-text" style="color:' + t.ctaText + '">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
-    '<div class="slide-cta-handle"><a href="https://t.me/huangks" target="_blank" style="color:' + t.ctaText + ';opacity:0.6;text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px">t.me/huangks</a></div>' +
-    '<div class="slide-cta-disclaimer">This is not financial advice. Speak to a licensed advisor before making decisions.</div>' +
-    '</div></div>';
+  // COVER: full bleed image right half, big headline left
+  return '<div class="slide" style="background:' + t.coverBg + '">' +
+    '<div style="position:absolute;right:0;top:0;width:48%;height:100%;background-image:url(' + coverImg + ');background-size:cover;background-position:center"></div>' +
+    '<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:6% 7%">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+    '<div style="font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';border:1px solid ' + t.coverAccent + ';padding:3px 10px;border-radius:100px">' + (pdfData.tag || type.label).toUpperCase() + '</div>' +
+    '<div style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:' + t.coverAccent + '">Kai · Financial Advisor</div>' +
+    '</div>' +
+    '<div style="max-width:52%">' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.6rem,4.5vw,3.8rem);font-weight:900;line-height:0.95;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.coverText + ';margin-bottom:1rem">' + (pdfData.headline || type.label) + '</div>' +
+    '<div style="font-size:clamp(0.65rem,1.1vw,0.82rem);line-height:1.65;color:' + t.coverSubtext + ';max-width:90%">' + (pdfData.intro || '') + '</div>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;border-top:1px solid ' + t.coverBorder + ';padding-top:0.75rem;color:' + t.coverAccent + '">' +
+    '<span>t.me/huangks</span><span>© 2026</span>' +
+    '</div></div></div>' +
+    slidesHTML +
+    // TAKEAWAY: massive text, full bleed
+    '<div class="slide" style="background:' + t.takeawayBg + '">' +
+    '<div style="position:absolute;inset:0;padding:6% 7%;display:flex;flex-direction:column;justify-content:center">' +
+    '<div style="font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';margin-bottom:1.5rem">Key Takeaway</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.4rem,4vw,3.2rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.takeawayText + ';max-width:85%">' + (pdfData.takeaway || '') + '</div>' +
+    '</div></div>' +
+    // CTA: split — big text left, handle right
+    '<div class="slide" style="background:' + t.calloutBg + '">' +
+    '<div style="position:absolute;inset:0;padding:6% 7%;display:flex;flex-direction:column;justify-content:space-between">' +
+    '<div style="font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.calloutText + ';opacity:0.5">Get in touch</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.4rem,4.5vw,3.6rem);font-weight:900;line-height:0.95;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.calloutText + ';max-width:75%">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,0.2);padding-top:0.75rem">' +
+    '<a href="https://t.me/huangks" target="_blank" style="font-size:clamp(1rem,2vw,1.5rem);font-weight:700;color:' + t.calloutText + ';text-decoration:none;letter-spacing:0.04em">→ t.me/huangks</a>' +
+    '<div style="font-size:8px;opacity:0.4;color:' + t.calloutText + ';max-width:35%;text-align:right;line-height:1.5">This is not financial advice. Speak to a licensed advisor before making decisions.</div>' +
+    '</div></div></div>';
 }
 
 function buildContentSlides(pdfData, type) {
   var t = THEMES[selectedTheme] || THEMES.cream;
-  resetImgCounters();
   return (pdfData.slides || []).map(function(slide, si) {
     var imgUrl = unsplashSearch(slide.imageKeyword || pdfData.imageKeyword || 'finance', type.id + '-' + si);
-    var calloutHTML = slide.callout ? '<div class="slide-callout" style="background:' + t.calloutBg + ';color:' + t.calloutText + '">' + slide.callout + '</div>' : '';
-    return '<div class="slide" style="background:' + t.contentBg + '"><div class="slide-inner content-inner">' +
-      '<div class="slide-left"><div class="slide-num" style="color:' + t.calloutBg + '">0' + (si+1) + '</div>' +
-      '<div class="slide-title" style="color:' + t.contentText + '">' + slide.title + '</div>' + calloutHTML + '</div>' +
-      '<div class="slide-right"><div class="slide-img-wrap" style="height:52%"><img src="' + imgUrl + '" alt="finance" class="slide-img" onerror="this.parentElement.style.display=\'none\'"/></div>' +
-      '<div class="slide-body" style="color:' + t.contentSub + '">' + slide.body + '</div></div>' +
-      '</div></div>';
+    var isEven = si % 2 === 0;
+    if (isEven) {
+      // Layout A: image takes full right half, big number + title + body left
+      return '<div class="slide" style="background:' + t.contentBg + '">' +
+        '<div style="position:absolute;right:0;top:0;width:45%;height:100%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
+        '<div style="position:absolute;inset:0;padding:5% 6%;display:flex;flex-direction:column;justify-content:space-between;max-width:55%">' +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(3rem,8vw,7rem);font-weight:900;line-height:1;color:' + t.contentText + ';opacity:0.08">0' + (si+1) + '</div>' +
+        '<div>' +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(1.1rem,2.8vw,2.2rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.01em;color:' + t.contentText + ';margin-bottom:0.75rem">' + slide.title + '</div>' +
+        '<div style="font-size:clamp(0.65rem,1.1vw,0.82rem);line-height:1.75;color:' + t.contentSub + ';margin-bottom:0.75rem">' + slide.body + '</div>' +
+        (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.5rem 0.85rem;font-size:clamp(0.6rem,0.9vw,0.75rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
+        '</div></div></div>';
+    } else {
+      // Layout B: full-bleed image top half, title + body bottom half
+      return '<div class="slide" style="background:' + t.contentBg + '">' +
+        '<div style="position:absolute;top:0;left:0;width:100%;height:55%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
+        '<div style="position:absolute;bottom:0;left:0;right:0;height:48%;padding:3% 6%;display:flex;flex-direction:row;gap:4%;align-items:flex-start;background:' + t.contentBg + '">' +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(0.9rem,2.2vw,1.8rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.01em;color:' + t.contentText + ';width:38%;flex-shrink:0">' + slide.title + '</div>' +
+        '<div style="flex:1">' +
+        '<div style="font-size:clamp(0.6rem,1vw,0.8rem);line-height:1.75;color:' + t.contentSub + ';margin-bottom:0.5rem">' + slide.body + '</div>' +
+        (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.4rem 0.75rem;font-size:clamp(0.55rem,0.85vw,0.7rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
+        '</div></div></div>';
+    }
   }).join('');
 }
 
-function downloadDeck(index, title) {
+async function downloadDeck(index, title) {
   var deckEl = document.getElementById('deck-' + index);
   if (!deckEl) return;
-  var t = THEMES[selectedTheme] || THEMES.cream;
-  var css = '* {box-sizing:border-box;margin:0;padding:0} body {background:#f0ece4;font-family:Inter,sans-serif} .save-bar {position:fixed;top:0;left:0;right:0;background:#1C1C1C;color:#F5F0E8;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;z-index:999;font-family:Inter,sans-serif} .save-bar-title {font-size:13px;font-weight:600;letter-spacing:0.04em} .save-bar-steps {font-size:11px;opacity:0.6;margin:0 1rem} .save-btn {background:#F5F0E8;color:#1C1C1C;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em} .save-btn:hover {background:#e8e4dc} .deck {margin-top:56px;display:flex;flex-direction:column;gap:8px;padding:16px;max-width:900px;margin-left:auto;margin-right:auto} .slide {width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:8px} .slide-inner {position:absolute;inset:0;padding:4% 5%;display:flex;flex-direction:column} .cover-inner {justify-content:space-between} .slide-tag {display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;border:1px solid;padding:4px 10px;border-radius:100px;margin-bottom:1rem;width:fit-content} .slide-cover-title {font-family:"Playfair Display",serif;font-size:clamp(1.2rem,3.5vw,2.8rem);font-weight:900;line-height:1.05;text-transform:uppercase;margin-bottom:0.75rem;max-width:65%} .slide-cover-intro {font-size:clamp(0.65rem,1.2vw,0.85rem);line-height:1.65;max-width:60%} .slide-cover-footer {display:flex;justify-content:space-between;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;border-top:1px solid;padding-top:0.75rem} .content-inner {flex-direction:row;gap:3rem;align-items:stretch} .slide-left {width:36%;display:flex;flex-direction:column;justify-content:space-between} .slide-right {flex:1;display:flex;flex-direction:column;gap:0.5rem;justify-content:center} .slide-num {font-family:"Playfair Display",serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;line-height:1;opacity:0.1} .slide-title {font-family:"Playfair Display",serif;font-size:clamp(0.9rem,2.2vw,1.6rem);font-weight:900;line-height:1.1;text-transform:uppercase} .slide-callout {padding:0.5rem 0.75rem;border-radius:8px;font-size:clamp(0.55rem,0.9vw,0.75rem);font-weight:600;line-height:1.4;margin-top:0.5rem} .slide-img-wrap {width:100%;height:52%;overflow:hidden;border-radius:6px} .slide-img {width:100%;height:100%;object-fit:cover;display:block} .slide-body {font-size:clamp(0.6rem,1.1vw,0.82rem);line-height:1.75} .takeaway-inner {justify-content:center} .slide-label {font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;opacity:0.45;margin-bottom:1rem} .slide-takeaway-text {font-family:"Playfair Display",serif;font-size:clamp(1rem,3vw,2.2rem);font-weight:900;line-height:1.15;text-transform:uppercase;max-width:80%} .cta-inner {justify-content:center;align-items:center;text-align:center} .slide-cta-text {font-family:"Playfair Display",serif;font-size:clamp(0.9rem,2.5vw,1.8rem);font-weight:900;text-transform:uppercase;line-height:1.15;margin-bottom:0.5rem} .slide-cta-handle {font-size:clamp(0.6rem,1vw,0.8rem);font-weight:500;opacity:0.5;margin-bottom:0.75rem;letter-spacing:0.08em} .slide-cta-disclaimer {font-size:9px;opacity:0.35;line-height:1.5;max-width:60%;margin:0 auto} a {text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px} @media print {.save-bar {display:none!important} body {background:white} .deck {margin-top:0;padding:0;max-width:100%} .slide {aspect-ratio:16/9;page-break-after:always;border-radius:0;width:100%} @page {size:A4 landscape;margin:0}}';
 
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title>' +
-    '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">' +
-    '<style>' + css + '</style></head><body>' +
-    '<div class="save-bar">' +
-    '<span class="save-bar-title">📄 ' + title + '</span>' +
-    '<span class="save-bar-steps">① Click Save as PDF &nbsp;|&nbsp; ② Layout: Landscape &nbsp;|&nbsp; ③ Margins: None &nbsp;|&nbsp; ④ ✅ Background graphics</span>' +
-    '<button class="save-btn" onclick="window.print()">⬇ Save as PDF</button>' +
-    '</div>' +
-    '<div class="deck">' + deckEl.innerHTML + '</div>' +
-    '</body></html>';
+  const btn = document.querySelectorAll('.btn-download')[index];
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating PDF...'; }
 
-  var blob = new Blob([html], {type:'text/html'});
-  var url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  try {
+    // Dynamically load jsPDF and html2canvas
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const slides = deckEl.querySelectorAll('.slide');
+    const pdfW = 297; const pdfH = 210;
+
+    for (let i = 0; i < slides.length; i++) {
+      if (i > 0) pdf.addPage();
+      if (btn) btn.textContent = '⏳ Slide ' + (i+1) + '/' + slides.length + '...';
+
+      const canvas = await html2canvas(slides[i], {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+        width: slides[i].offsetWidth,
+        height: slides[i].offsetHeight
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+    }
+
+    pdf.save(title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.pdf');
+  } catch(e) {
+    console.error(e);
+    alert('PDF generation failed. Try the Download HTML option instead.');
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = '⬇ Download deck'; }
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
 }
 
 async function runPipeline() {
@@ -624,7 +696,7 @@ function renderCard(result, index) {
           <button class="btn-regen-deck" onclick="regenDeck(${index},'${deckTitle.replace(/'/g,"\\'")}')">↺ Regenerate deck</button>
         </div>
         <div style="margin-top:0.6rem;font-size:11px;color:var(--muted);text-align:center;line-height:1.6">
-          After opening: set Destination → <strong>Save as PDF</strong> · Layout → <strong>Landscape</strong> · Margins → <strong>None</strong> · tick <strong>Background graphics</strong>
+          Exports directly as a landscape PDF — no settings needed
         </div>
       </div>
       <div class="tab-content" id="tab-${index}-score">

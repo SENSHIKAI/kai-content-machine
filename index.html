@@ -154,7 +154,14 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .market-clear-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
 .market-clear-btn:hover { color: var(--text); background: var(--grey2); }
 
-.btn-download { background: var(--border); color: var(--bg); border: none; border-radius: var(--r-sm); padding: 10px 22px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
+.suggest-box { margin-top: 1rem; background: var(--grey1); border: 1px solid var(--border-light); border-radius: var(--r-sm); padding: 1rem; }
+.suggest-input { width: 100%; background: white; border: 1px solid var(--border-light); border-radius: 8px; padding: 0.65rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text); outline: none; resize: none; min-height: 60px; margin-bottom: 0.6rem; }
+.suggest-input:focus { border-color: var(--border); }
+.suggest-input::placeholder { color: var(--muted); }
+.suggest-btn { background: var(--border); color: var(--bg); border: none; border-radius: 8px; padding: 8px 18px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.2s; }
+.suggest-btn:hover:not(:disabled) { background: #333; }
+.suggest-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.suggest-status { font-size: 12px; color: var(--muted); margin-top: 0.5rem; min-height: 18px; font-family: 'Inter', sans-serif; } color: var(--bg); border: none; border-radius: var(--r-sm); padding: 10px 22px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
 .btn-download:hover { background: #333; }
 .btn-regen-deck { background: transparent; color: var(--text); border: 1px solid var(--border-light); border-radius: var(--r-sm); padding: 10px 18px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; }
 .btn-regen-deck:hover { border-color: var(--border); background: var(--grey1); }
@@ -496,7 +503,7 @@ function buildDeckHTML(pdfData, type, slidesHTML) {
     '<div style="font-size:8px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.calloutText + ';opacity:0.45">Get in touch</div>' +
     '<div style="font-family:Playfair Display,serif;font-size:clamp(1.2rem,3vw,2.4rem);font-weight:700;line-height:1.15;color:' + t.calloutText + ';max-width:80%;text-transform:none;letter-spacing:-0.01em">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
     '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,0.15);padding-top:0.75rem">' +
-    '<a href="https://t.me/huangks" target="_blank" style="font-size:clamp(0.85rem,1.6vw,1.2rem);font-weight:700;color:' + t.calloutText + ';text-decoration:none;letter-spacing:0.02em">→ t.me/huangks</a>' +
+    '<a href="https://t.me/huangks" target="_blank" style="font-size:clamp(0.85rem,1.6vw,1.2rem);font-weight:700;color:' + t.calloutText + ';text-decoration:none;letter-spacing:0.02em;border-bottom:2px solid currentColor;padding-bottom:2px">→ t.me/huangks</a>' +
     '<div style="font-size:7px;opacity:0.35;color:' + t.calloutText + ';max-width:38%;text-align:right;line-height:1.5">This is not financial advice. Speak to a licensed advisor before making decisions.</div>' +
     '</div></div></div>';
 }
@@ -552,9 +559,8 @@ async function downloadDeck(index, title) {
       if (i > 0) pdf.addPage();
       if (btn) btn.textContent = '⏳ Slide ' + (i+1) + '/' + slides.length + '...';
 
-      // Force slide to render at correct 16:9 dimensions before capture
       const slideW = slides[i].offsetWidth;
-      const slideH = Math.round(slideW * 9 / 16);
+      const slideH = slides[i].offsetHeight || Math.round(slideW * 9 / 16);
 
       const canvas = await html2canvas(slides[i], {
         scale: 2,
@@ -566,14 +572,19 @@ async function downloadDeck(index, title) {
         height: slideH
       });
 
-      // Fill full A4 landscape - no offsets, no gaps
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-
-      // Add handle as text overlay on every slide so it survives PDF
-      pdf.setFontSize(7);
-      pdf.setTextColor(180, 180, 180);
-      pdf.text('t.me/huangks', pdfW - 8, pdfH - 4, { align: 'right' });
+      // Fit image into A4 landscape maintaining aspect ratio
+      const canvasAspect = canvas.width / canvas.height;
+      const pdfAspect = pdfW / pdfH;
+      let drawW = pdfW, drawH = pdfH, drawX = 0, drawY = 0;
+      if (canvasAspect > pdfAspect) {
+        drawH = pdfW / canvasAspect;
+        drawY = (pdfH - drawH) / 2;
+      } else {
+        drawW = pdfH * canvasAspect;
+        drawX = (pdfW - drawW) / 2;
+      }
+      pdf.addImage(imgData, 'JPEG', drawX, drawY, drawW, drawH);
     }
 
     pdf.save(title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.pdf');
@@ -697,7 +708,17 @@ function renderCard(result, index) {
         <button class="tab" onclick="switchTab(${index},'pdf',this)">Deck preview</button>
         <button class="tab" onclick="switchTab(${index},'score',this)">Review scores</button>
       </div>
-      <div class="tab-content active" id="tab-${index}-post"><div class="post-text" contenteditable="true" spellcheck="true">${post.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><div style="font-size:11px;color:var(--muted);margin-top:0.5rem">✏️ Click to edit — then hit ↺ Regenerate deck to update slides</div></div>
+      <div class="tab-content active" id="tab-${index}-post">
+        <div class="post-text" contenteditable="true" spellcheck="true">${post.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:0.5rem">✏️ Click to edit directly — or use the suggestion box below</div>
+        <div class="suggest-box" id="suggest-box-${index}">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem">💡 Suggest a rewrite</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:0.6rem">Tell the agent what to fix e.g. "Rewrite point 1 to be less negative about ILPs" or "Make the opening hook stronger"</div>
+          <textarea class="suggest-input" id="suggest-input-${index}" placeholder="e.g. Rewrite point 1 — make it less harsh and more curiosity-driven..."></textarea>
+          <button class="suggest-btn" onclick="rewriteSection(${index})">✦ Rewrite with suggestion</button>
+          <div class="suggest-status" id="suggest-status-${index}"></div>
+        </div>
+      </div>
       <div class="tab-content" id="tab-${index}-pdf">
         <div class="deck-preview" id="deck-${index}">${deckInner}</div>
         <div style="margin-top:0.75rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;justify-content:center;">
@@ -728,7 +749,28 @@ function renderCard(result, index) {
 
 const pdfStore = {};
 
-async function regenDeck(index, deckTitle) {
+async function rewriteSection(index) {
+  const suggestion = document.getElementById('suggest-input-' + index).value.trim();
+  if (!suggestion) { document.getElementById('suggest-status-' + index).textContent = 'Please type your suggestion first.'; return; }
+  const postEl = document.querySelector('#tab-' + index + '-post .post-text');
+  if (!postEl) return;
+  const currentPost = postEl.innerText.trim();
+  const btn = document.querySelector('#suggest-box-' + index + ' .suggest-btn');
+  const status = document.getElementById('suggest-status-' + index);
+  btn.disabled = true; btn.textContent = '⏳ Rewriting...';
+  status.textContent = '';
+  try {
+    const system = 'You are a financial content editor for a Telegram channel run by Kai, a licensed financial advisor in Singapore. You will receive a post and a specific suggestion for improvement. Apply ONLY the suggested change — keep everything else exactly the same. Do not rewrite the whole post. Return only the updated post with no explanation. No markdown formatting.';
+    const result = await callClaude(system, 'Here is the current post:\n\n' + currentPost + '\n\nSuggestion to apply:\n' + suggestion + '\n\nReturn the updated post only.');
+    const cleaned = result.replace(/\*\*/g,'').replace(/\*/g,'').replace(/#{1,6}\s/g,'').trim();
+    postEl.innerText = cleaned;
+    status.textContent = '✓ Done — review the changes above';
+    document.getElementById('suggest-input-' + index).value = '';
+  } catch(e) { status.textContent = '❌ Something went wrong. Try again.'; console.error(e); }
+  btn.disabled = false; btn.textContent = '✦ Rewrite with suggestion';
+}
+
+
   const stored = pdfStore[index];
   if (!stored) return;
 

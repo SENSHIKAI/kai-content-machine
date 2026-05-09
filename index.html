@@ -251,17 +251,12 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 
   <!-- Market Pulse -->
   <div class="config-section" id="market-pulse-section">
-    <h2>📰 Market Pulse — paste a news article URL</h2>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;line-height:1.6">Paste any news article link — the agent will fetch it and break it down into a simple Singaporean-friendly post + deck. Works best with CNA, BBC, Reuters, Yahoo Finance SG.</div>
-    <div class="market-url-wrap">
-      <input type="url" id="market-url" class="market-url-input" placeholder="https://www.channelnewsasia.com/..."/>
-      <button class="market-fetch-btn" id="market-fetch-btn" onclick="fetchAndPreview()">Fetch article</button>
-    </div>
-    <div class="market-preview" id="market-preview" style="display:none">
-      <div class="market-preview-label">Article fetched ✓</div>
-      <div class="market-preview-title" id="market-preview-title"></div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">This will override the topic picker when you hit Generate</div>
-      <button class="market-clear-btn" onclick="clearMarketPulse()">✕ Clear</button>
+    <h2>📰 Market Pulse — paste article text</h2>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;line-height:1.6">Copy any news article text and paste it here — the agent will break it down into a simple Singaporean-friendly post + deck. Works with any source: CNA, BBC, Reuters, Straits Times, Bloomberg.</div>
+    <textarea id="market-text" class="market-url-input" rows="5" placeholder="Paste the full article text here e.g. 'Oil prices fell sharply on Tuesday after the US announced...'" style="width:100%;border-radius:var(--r-sm);resize:vertical;padding:0.85rem 1rem;font-family:Inter,sans-serif;font-size:13px;line-height:1.6"></textarea>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.6rem">
+      <span style="font-size:11px;color:var(--muted)">Paste article text above → hit Generate. This overrides the topic picker.</span>
+      <button class="market-clear-btn" onclick="clearMarketPulse()" style="position:static;font-size:12px;padding:5px 12px;border:1px solid var(--border-light);border-radius:var(--r-sm);background:transparent;cursor:pointer;color:var(--muted);font-family:Inter,sans-serif">✕ Clear</button>
     </div>
   </div>
 
@@ -374,47 +369,8 @@ async function callClaude(systemPrompt, userPrompt) {
   return data.content.map(b => b.text || '').join('');
 }
 
-async function fetchAndPreview() {
-  const url = document.getElementById('market-url').value.trim();
-  if (!url || !url.startsWith('http')) {
-    alert('Please enter a valid URL starting with http'); return;
-  }
-  const btn = document.getElementById('market-fetch-btn');
-  btn.disabled = true; btn.textContent = 'Fetching...';
-  try {
-    // Use allorigins proxy to bypass CORS
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
-    const response = await fetch(proxyUrl);
-    const data = await response.json();
-    const html = data.contents || '';
-    // Strip HTML tags to get plain text
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    // Remove scripts and styles
-    tmp.querySelectorAll('script,style,nav,header,footer,aside').forEach(el => el.remove());
-    const text = tmp.innerText || tmp.textContent || '';
-    const cleaned = text.replace(/\s+/g,' ').trim().substring(0, 3000);
-    if (cleaned.length < 100) throw new Error('Could not extract article content');
-    // Get title
-    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const title = titleMatch ? titleMatch[1].replace(/\s*[\|\-–].*$/, '').trim() : url;
-    marketPulseContent = cleaned;
-    document.getElementById('market-preview-title').textContent = title;
-    document.getElementById('market-preview').style.display = 'flex';
-    // Dim topic chips to show market pulse is active
-    document.querySelectorAll('.topic-chip').forEach(c => c.style.opacity = '0.4');
-    document.getElementById('custom-topic').style.opacity = '0.4';
-  } catch(e) {
-    alert('Could not fetch this article. Try a different URL or paste the article text into the custom topic field.');
-    console.error(e);
-  }
-  btn.disabled = false; btn.textContent = 'Fetch article';
-}
-
 function clearMarketPulse() {
-  marketPulseContent = null;
-  document.getElementById('market-url').value = '';
-  document.getElementById('market-preview').style.display = 'none';
+  document.getElementById('market-text').value = '';
   document.querySelectorAll('.topic-chip').forEach(c => c.style.opacity = '1');
   document.getElementById('custom-topic').style.opacity = '1';
 }
@@ -460,12 +416,37 @@ function activateNode(id) {
 }
 
 function unsplashUrl(keyword, w, h) {
-  return 'https://source.unsplash.com/featured/' + w + 'x' + h + '/?' + encodeURIComponent(keyword || 'finance') + ',finance';
+  const keywords = encodeURIComponent((keyword || 'finance') + ' money');
+  return 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=' + w + '&q=80&auto=format&fit=crop';
+}
+
+function unsplashSearch(keyword) {
+  const searches = {
+    money: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=600&q=80&auto=format&fit=crop',
+    savings: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=600&q=80&auto=format&fit=crop',
+    investment: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80&auto=format&fit=crop',
+    finance: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&auto=format&fit=crop',
+    retirement: 'https://images.unsplash.com/photo-1559526324-593bc073d938?w=600&q=80&auto=format&fit=crop',
+    planning: 'https://images.unsplash.com/photo-1484981184820-2e84ea0af397?w=600&q=80&auto=format&fit=crop',
+    coins: 'https://images.unsplash.com/photo-1618044733300-9472054094ee?w=600&q=80&auto=format&fit=crop',
+    growth: 'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=600&q=80&auto=format&fit=crop',
+    chart: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80&auto=format&fit=crop',
+    family: 'https://images.unsplash.com/photo-1511895426328-dc8714191011?w=600&q=80&auto=format&fit=crop',
+    singapore: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&q=80&auto=format&fit=crop',
+    news: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80&auto=format&fit=crop',
+    economy: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&q=80&auto=format&fit=crop',
+    trading: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80&auto=format&fit=crop',
+    insurance: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600&q=80&auto=format&fit=crop',
+    cpf: 'https://images.unsplash.com/photo-1559526324-593bc073d938?w=600&q=80&auto=format&fit=crop',
+    default: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80&auto=format&fit=crop'
+  };
+  const key = (keyword || '').toLowerCase();
+  return searches[key] || searches['default'];
 }
 
 function buildDeckHTML(pdfData, type, slidesHTML) {
   var t = THEMES[selectedTheme] || THEMES.cream;
-  var coverImg = unsplashUrl(pdfData.imageKeyword || 'finance', 1200, 675);
+  var coverImg = unsplashSearch(pdfData.imageKeyword || 'finance');
   return '<div class="slide" style="background:' + t.coverBg + ';position:relative">' +
     '<div style="position:absolute;inset:0;background-image:url(' + coverImg + ');background-size:cover;background-position:center;opacity:0.15"></div>' +
     '<div class="slide-inner cover-inner" style="position:relative;z-index:1">' +
@@ -487,7 +468,7 @@ function buildDeckHTML(pdfData, type, slidesHTML) {
 function buildContentSlides(pdfData, type) {
   var t = THEMES[selectedTheme] || THEMES.cream;
   return (pdfData.slides || []).map(function(slide, si) {
-    var imgUrl = unsplashUrl(slide.imageKeyword || pdfData.imageKeyword || 'finance', 600, 400);
+    var imgUrl = unsplashSearch(slide.imageKeyword || pdfData.imageKeyword || 'finance');
     var calloutHTML = slide.callout ? '<div class="slide-callout" style="background:' + t.calloutBg + ';color:' + t.calloutText + '">' + slide.callout + '</div>' : '';
     return '<div class="slide" style="background:' + t.contentBg + '"><div class="slide-inner content-inner">' +
       '<div class="slide-left"><div class="slide-num" style="color:' + t.calloutBg + '">0' + (si+1) + '</div>' +
@@ -513,6 +494,8 @@ function downloadDeck(index, title) {
 
 async function runPipeline() {
   const topic = document.getElementById('custom-topic').value.trim() || selectedTopic;
+  const marketText = document.getElementById('market-text').value.trim();
+  marketPulseContent = marketText || null;
   if (!topic && !marketPulseContent) return;
   const btn = document.getElementById('generate-btn');
   btn.disabled = true;

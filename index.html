@@ -484,19 +484,19 @@ function buildDeckHTML(pdfData, type, slidesHTML) {
     '<div style="font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:' + t.coverAccent + ';opacity:0.5">t.me/huangks</div>' +
     '</div></div></div>' +
     slidesHTML +
-    // TAKEAWAY — font scales down for long text
+    // TAKEAWAY — mixed typography: small label, large headline, readable size
     '<div class="slide" style="background:' + t.takeawayBg + '">' +
-    '<div style="position:absolute;inset:0;padding:6% 7%;display:flex;flex-direction:column;justify-content:center">' +
-    '<div style="font-size:8px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';margin-bottom:1.25rem;opacity:0.6">Key Takeaway</div>' +
-    '<div style="font-family:Playfair Display,serif;font-size:clamp(1rem,3vw,2.4rem);font-weight:900;line-height:1.05;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.takeawayText + ';max-width:88%">' + (pdfData.takeaway || '') + '</div>' +
+    '<div style="position:absolute;inset:0;padding:6% 7%;display:flex;flex-direction:column;justify-content:center;gap:1rem">' +
+    '<div style="font-size:8px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';opacity:0.6">Key Takeaway</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.2rem,2.8vw,2.2rem);font-weight:700;line-height:1.25;color:' + t.takeawayText + ';max-width:80%;text-transform:none;letter-spacing:-0.01em">' + (pdfData.takeaway || '') + '</div>' +
     '</div></div>' +
-    // CTA
+    // CTA — big punchy line, then smaller handle
     '<div class="slide" style="background:' + t.calloutBg + '">' +
     '<div style="position:absolute;inset:0;padding:6% 7%;display:flex;flex-direction:column;justify-content:space-between">' +
     '<div style="font-size:8px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.calloutText + ';opacity:0.45">Get in touch</div>' +
-    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.2rem,3.8vw,3rem);font-weight:900;line-height:0.95;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.calloutText + ';max-width:78%">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.2rem,3vw,2.4rem);font-weight:700;line-height:1.15;color:' + t.calloutText + ';max-width:80%;text-transform:none;letter-spacing:-0.01em">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
     '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,0.15);padding-top:0.75rem">' +
-    '<a href="https://t.me/huangks" target="_blank" style="font-size:clamp(0.85rem,1.8vw,1.3rem);font-weight:700;color:' + t.calloutText + ';text-decoration:none;letter-spacing:0.04em">→ t.me/huangks</a>' +
+    '<a href="https://t.me/huangks" target="_blank" style="font-size:clamp(0.85rem,1.6vw,1.2rem);font-weight:700;color:' + t.calloutText + ';text-decoration:none;letter-spacing:0.02em">→ t.me/huangks</a>' +
     '<div style="font-size:7px;opacity:0.35;color:' + t.calloutText + ';max-width:38%;text-align:right;line-height:1.5">This is not financial advice. Speak to a licensed advisor before making decisions.</div>' +
     '</div></div></div>';
 }
@@ -552,18 +552,31 @@ async function downloadDeck(index, title) {
       if (i > 0) pdf.addPage();
       if (btn) btn.textContent = '⏳ Slide ' + (i+1) + '/' + slides.length + '...';
 
+      // Force correct dimensions before capture
+      const slideW = slides[i].offsetWidth;
+      const slideH = slides[i].offsetHeight;
+
       const canvas = await html2canvas(slides[i], {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
         logging: false,
-        width: slides[i].offsetWidth,
-        height: slides[i].offsetHeight
+        width: slideW,
+        height: slideH,
+        windowWidth: slideW,
+        windowHeight: slideH
       });
 
+      // Maintain 16:9 aspect ratio within A4 landscape (297x210mm)
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+      const imgAspect = canvas.width / canvas.height;
+      let imgW = pdfW;
+      let imgH = pdfW / imgAspect;
+      if (imgH > pdfH) { imgH = pdfH; imgW = pdfH * imgAspect; }
+      const offsetX = (pdfW - imgW) / 2;
+      const offsetY = (pdfH - imgH) / 2;
+      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, imgW, imgH);
     }
 
     pdf.save(title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.pdf');
@@ -603,7 +616,7 @@ async function runPipeline() {
     try {
       activateNode('content');
       setProgress(25, 'Breaking down the article...');
-      const mpSystem = 'You are a financial educator writing for everyday Singaporeans aged 21-50. You take a news article and break it down into a clear simple relatable Telegram post. Structure your post EXACTLY as: \n\n📰 WHAT HAPPENED\n[2 simple sentences explaining the news]\n\n🇸🇬 WHY IT MATTERS TO YOU\n[2-3 sentences on the Singapore impact — CPF, investments, property, cost of living, jobs]\n\n✅ WHAT YOU CAN DO NOW\n1. [action step]\n2. [action step]\n3. [action step]\n\n💬 [Soft DM call to action — "Not sure how this affects you? DM me — happy to break it down for your situation."]\n\nThis is not financial advice. Speak to a licensed advisor before making any decisions.';
+      const mpSystem = 'You are a financial educator writing for everyday Singaporeans aged 21-50. You take a news article and break it down into a clear simple relatable Telegram post. Write like a knowledgeable friend — helpful and honest. In the "What You Can Do Now" section, one of the steps can naturally suggest speaking to someone who knows your full situation — but keep it light, not salesy. Structure EXACTLY as:\n\n📰 WHAT HAPPENED\n[2 simple sentences explaining the news]\n\n🇸🇬 WHY IT MATTERS TO YOU\n[2-3 sentences on the Singapore impact — CPF, investments, property, cost of living, jobs]\n\n✅ WHAT YOU CAN DO NOW\n1. [action step]\n2. [action step]\n3. [action step]\n\n💬 [Soft DM call to action — "Not sure how this affects you? DM me — happy to break it down for your situation."]\n\nThis is not financial advice. Speak to a licensed advisor before making any decisions.';
       const postWithCTA = await callClaude(mpSystem, 'Article content:\n\n' + marketPulseContent + '\n\nWrite the Market Pulse Telegram post.');
 
       activateNode('creative');
@@ -639,13 +652,13 @@ async function runPipeline() {
       const type = POST_TYPES[i];
       activateNode('content');
       setProgress((i*25)+4, 'Content Agent writing ' + type.label + '...');
-      const contentSystem = 'You are a financial content writer for a Telegram channel targeting Singaporeans aged 21-50. Write simple jargon-free warm relatable finance posts. No financial advice — educate only. Always end with: "This is not financial advice. Speak to a licensed advisor before making decisions." Use Singaporean context (CPF HDB endowment plans ILPs unit trusts). Keep sentences short. Max 3 lines per paragraph.';
+      const contentSystem = 'You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Your tone is like a knowledgeable friend — helpful, honest, never salesy. You can mention tools like robo-advisors, banks, and apps naturally where relevant — they are valid options. The only subtle rule: somewhere in the post, in one natural sentence, hint that everyones situation is different and a personalised conversation can help — but weave it in organically, not as a pitch. Never repeat the advisor angle more than once. No specific financial advice. Always end with: "This is not financial advice. Speak to a licensed advisor before making decisions." Use Singaporean context (CPF HDB endowment plans ILPs unit trusts). Keep sentences short. Max 3 lines per paragraph. No markdown formatting like ** or ## in the post.';
       const instructions = { myth:'Write a MYTH-BUSTER post. Start with a bold myth about ' + topic + '. Bust it with 2-3 truths. Format: [MYTH] then [TRUTH].', tips:'Write a BEGINNER TIPS post. Give 3 actionable tips about ' + topic + '. Number 1 2 3. Each 1-2 sentences.', real:'Write a REAL TALK post. Tell a relatable story about a mistake or lesson about ' + topic + '. Be honest and human.', check:'Write a CHECKLIST post. Give 4 yes/no items to verify about ' + topic + '. Format as checkboxes.' };
       const rawPost = await callClaude(contentSystem, 'Topic: ' + topic + '\n\n' + instructions[type.id]);
       activateNode('cta');
       setProgress((i*25)+10, 'CTA Agent adding DM hook...');
       const ctaSystem = 'You are a CTA specialist for a financial advisor Telegram channel. Add a soft non-pushy DM call-to-action to the end of this post. Use styles like "DM me if this sounds familiar" or "Want a free 15-min chat? DM me." Return ONLY the full post with CTA added.';
-      const postWithCTA = await callClaude(ctaSystem, 'Add a DM CTA to:\n\n' + rawPost);
+      const postWithCTA = (await callClaude(ctaSystem, 'Add a DM CTA to:\n\n' + rawPost)).replace(/\*\*/g,'').replace(/\*/g,'').replace(/#{1,6}\s/g,'');
       activateNode('creative');
       setProgress((i*25)+18, 'Creative Agent building deck...');
       const creativeSystem = 'You are a creative director for a Singapore financial advisor. Return ONLY valid JSON no markdown: {"headline":"punchy title max 8 words","tag":"post type","intro":"1-2 sentence hook","imageKeyword":"single english word for Unsplash e.g. money savings investment","slides":[{"title":"max 6 words","body":"2-4 sentences full detail","callout":"one punchy takeaway","imageKeyword":"single word e.g. coins growth"}],"takeaway":"key lesson 1-2 sentences","cta":"warm DM CTA max 15 words"} Generate 3-4 slides.';
@@ -725,7 +738,16 @@ async function regenDeck(index, deckTitle) {
   // Read the CURRENT edited post text — strip any HTML tags from contenteditable
   const postEl = document.querySelector('#tab-' + index + '-post .post-text');
   const rawText = postEl ? (postEl.innerText || postEl.textContent || '') : (stored.post || '');
-  const currentPost = rawText.replace(/<[^>]*>/g, '').replace(/\u00a0/g, ' ').trim();
+  // Strip markdown symbols, HTML tags, and clean up spacing
+  const currentPost = rawText
+    .replace(/<[^>]*>/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 
   console.log('Regenerating deck from edited post:', currentPost.substring(0, 200));
   const btn = document.querySelectorAll('.btn-regen-deck')[index];

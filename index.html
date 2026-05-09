@@ -564,7 +564,7 @@ async function downloadDeck(index, title) {
       if (btn) btn.textContent = '⏳ Slide ' + (i+1) + '/' + slides.length + '...';
 
       const slideW = slides[i].offsetWidth;
-      const slideH = slides[i].offsetHeight || Math.round(slideW * 9 / 16);
+      const slideH = slides[i].offsetHeight;
 
       const canvas = await html2canvas(slides[i], {
         scale: 2,
@@ -573,22 +573,14 @@ async function downloadDeck(index, title) {
         backgroundColor: null,
         logging: false,
         width: slideW,
-        height: slideH
+        height: slideH,
+        scrollX: 0,
+        scrollY: 0
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      // Fit image into A4 landscape maintaining aspect ratio
-      const canvasAspect = canvas.width / canvas.height;
-      const pdfAspect = pdfW / pdfH;
-      let drawW = pdfW, drawH = pdfH, drawX = 0, drawY = 0;
-      if (canvasAspect > pdfAspect) {
-        drawH = pdfW / canvasAspect;
-        drawY = (pdfH - drawH) / 2;
-      } else {
-        drawW = pdfH * canvasAspect;
-        drawX = (pdfW - drawW) / 2;
-      }
-      pdf.addImage(imgData, 'JPEG', drawX, drawY, drawW, drawH);
+      // Stretch to fill entire A4 landscape — no letterboxing, no white bars
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH, '', 'FAST');
     }
 
     pdf.save(title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.pdf');
@@ -724,11 +716,6 @@ function renderCard(result, index) {
         </div>
       </div>
       <div class="tab-content" id="tab-${index}-pdf">
-        <div class="tabs" style="margin:1.25rem 1.5rem 1rem;">
-          <button class="tab active" onclick="switchTab(${index},'post',this);document.getElementById('card-body-${index}').className='card-body'">Telegram post</button>
-          <button class="tab active" onclick="switchTab(${index},'pdf',this)">Deck preview</button>
-          <button class="tab" onclick="switchTab(${index},'score',this);document.getElementById('card-body-${index}').className='card-body'">Review scores</button>
-        </div>
         <div class="deck-preview" id="deck-${index}">${deckInner}</div>
         <div class="pdf-actions">
           <button class="btn-download" onclick="downloadDeck(${index},'${deckTitle}')">⬇ Download deck</button>

@@ -162,6 +162,7 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .suggest-btn:hover:not(:disabled) { background: #333; }
 .suggest-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .suggest-status { font-size: 12px; color: var(--muted); margin-top: 0.5rem; min-height: 18px; font-family: 'Inter', sans-serif; } color: var(--bg); border: none; border-radius: var(--r-sm); padding: 10px 22px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; }
+.btn-download { background: var(--border); color: var(--bg); border: none; border-radius: var(--r-sm); padding: 10px 22px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; }
 .btn-download:hover { background: #333; }
 .btn-regen-deck { background: transparent; color: var(--text); border: 1px solid var(--border-light); border-radius: var(--r-sm); padding: 10px 18px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; }
 .btn-regen-deck:hover { border-color: var(--border); background: var(--grey1); }
@@ -719,13 +720,13 @@ function renderCard(result, index) {
           <div class="suggest-status" id="suggest-status-${index}"></div>
         </div>
       </div>
-      <div class="tab-content" id="tab-${index}-pdf">
+      <div class="tab-content" id="tab-${index}-pdf" style="margin: -1.5rem -1.5rem 0 -1.5rem;">
         <div class="deck-preview" id="deck-${index}">${deckInner}</div>
-        <div style="margin-top:0.75rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+        <div style="padding:1rem 1.5rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--grey1);border-top:1px solid var(--border-light);">
           <button class="btn-download" onclick="downloadDeck(${index},'${deckTitle}')">⬇ Download deck</button>
           <button class="btn-regen-deck" onclick="regenDeck(${index},'${deckTitle.replace(/'/g,"\\'")}')">↺ Regenerate deck</button>
         </div>
-        <div style="margin-top:0.6rem;font-size:11px;color:var(--muted);text-align:center;line-height:1.6">
+        <div style="padding:0.5rem 1.5rem 1rem;font-size:11px;color:var(--muted);text-align:center;background:var(--grey1);">
           Exports directly as a landscape PDF — no settings needed
         </div>
       </div>

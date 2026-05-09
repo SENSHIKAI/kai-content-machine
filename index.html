@@ -771,6 +771,7 @@ async function rewriteSection(index) {
 }
 
 
+async function regenDeck(index, deckTitle) {
   const stored = pdfStore[index];
   if (!stored) return;
 

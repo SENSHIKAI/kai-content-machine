@@ -523,52 +523,73 @@ function buildContentSlides(pdfData, type) {
 }
 
 async function downloadDeck(index, title) {
-  var deckEl = document.getElementById('deck-' + index);
-  if (!deckEl) return;
-
+  const deckData = pdfStore[index];
+  if (!deckData) return;
   const btn = document.querySelectorAll('.btn-download')[index];
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating PDF...'; }
-
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Building deck...'; }
   try {
-    // Dynamically load jsPDF and html2canvas
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js');
+    const pres = new PptxGenJS();
+    pres.layout = 'LAYOUT_16x9';
+    const t = THEMES[selectedTheme] || THEMES.cream;
+    const pdf = deckData.pdf;
+    const type = deckData.type;
 
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const slides = deckEl.querySelectorAll('.slide');
-    const pdfW = 210; const pdfH = 297;
+    // Helper: strip hex # prefix
+    const hex = c => c.replace('#','');
 
-    for (let i = 0; i < slides.length; i++) {
-      if (i > 0) pdf.addPage();
-      if (btn) btn.textContent = '⏳ Slide ' + (i+1) + '/' + slides.length + '...';
+    // Cover slide
+    const coverSlide = pres.addSlide();
+    coverSlide.background = { color: hex(t.coverBg) };
+    const coverImg = unsplashSearch(pdf.imageKeyword || 'finance');
+    coverSlide.addImage({ path: coverImg, x: 5.2, y: 0, w: 4.8, h: 5.625, sizing: { type: 'cover', w: 4.8, h: 5.625 } });
+    coverSlide.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 5.4, h: 5.625, fill: { color: hex(t.coverBg) }, line: { color: hex(t.coverBg) } });
+    coverSlide.addText((type.label || 'Brief').toUpperCase(), { x: 0.4, y: 0.3, w: 4.5, h: 0.3, fontSize: 8, color: 'AAAAAA', charSpacing: 4, fontFace: 'Calibri', margin: 0 });
+    coverSlide.addText(pdf.headline || title, { x: 0.4, y: 0.7, w: 4.8, h: 2.5, fontSize: 36, bold: true, color: hex(t.coverText), fontFace: 'Georgia', valign: 'top' });
+    coverSlide.addText(pdf.intro || '', { x: 0.4, y: 3.4, w: 4.6, h: 1.2, fontSize: 12, color: 'BBBBBB', fontFace: 'Calibri', valign: 'top' });
+    coverSlide.addShape(pres.shapes.LINE, { x: 0.4, y: 5.1, w: 4.8, h: 0, line: { color: '444444', width: 0.5 } });
+    coverSlide.addText([{ text: 'Kai — Your Trusted Financial Advisor', options: {} }], { x: 0.4, y: 5.2, w: 3.2, h: 0.25, fontSize: 7, color: '888888', fontFace: 'Calibri', margin: 0 });
+    coverSlide.addText('t.me/huangks', { x: 4.2, y: 5.2, w: 1.4, h: 0.25, fontSize: 7, color: '888888', fontFace: 'Calibri', align: 'right', margin: 0 });
 
-      const slideW = slides[i].offsetWidth;
-      const slideH = slides[i].offsetHeight;
+    // Content slides
+    const slides = pdf.slides || [];
+    const imgs = _ALL_IMGS;
+    slides.forEach(function(slide, si) {
+      const s = pres.addSlide();
+      s.background = { color: hex(t.contentBg) };
+      const imgPhoto = 'https://images.unsplash.com/' + imgs[(_globalImgIdx + si) % imgs.length] + '?w=800&q=80&auto=format&fit=crop';
+      s.addImage({ path: imgPhoto, x: 0, y: 0, w: 10, h: 2.6, sizing: { type: 'cover', w: 10, h: 2.6 } });
+      s.addShape(pres.shapes.RECTANGLE, { x: 0, y: 2.5, w: 10, h: 3.125, fill: { color: hex(t.contentBg) }, line: { color: hex(t.contentBg) } });
+      s.addText('0' + (si + 1), { x: 0.4, y: 2.6, w: 0.8, h: 0.6, fontSize: 28, bold: true, color: hex(t.contentText), fontFace: 'Georgia', transparency: 80, margin: 0 });
+      s.addText(slide.title || '', { x: 0.4, y: 3.0, w: 9.2, h: 0.85, fontSize: 22, bold: true, color: hex(t.contentText), fontFace: 'Georgia', valign: 'top' });
+      s.addText(slide.body || '', { x: 0.4, y: 3.85, w: 9.2, h: 1.2, fontSize: 13, color: hex(t.contentSub), fontFace: 'Calibri', valign: 'top' });
+      if (slide.callout) {
+        s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.35, fill: { color: hex(t.calloutBg) }, line: { color: hex(t.calloutBg) } });
+        s.addText(slide.callout, { x: 0.5, y: 5.1, w: 9.0, h: 0.35, fontSize: 11, bold: true, color: hex(t.calloutText), fontFace: 'Calibri', valign: 'middle', margin: 0 });
+      }
+    });
 
-      const canvas = await html2canvas(slides[i], {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        logging: false,
-        width: slideW,
-        height: slideH,
-        scrollX: 0,
-        scrollY: 0
-      });
+    // Takeaway slide
+    const takeaway = pres.addSlide();
+    takeaway.background = { color: hex(t.takeawayBg) };
+    takeaway.addText('KEY TAKEAWAY', { x: 0.5, y: 0.4, w: 9, h: 0.3, fontSize: 8, color: '888888', charSpacing: 4, fontFace: 'Calibri', margin: 0 });
+    takeaway.addText(pdf.takeaway || '', { x: 0.5, y: 1.0, w: 9, h: 3.5, fontSize: 28, bold: true, color: hex(t.takeawayText), fontFace: 'Georgia', valign: 'top' });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      // Stretch to fill entire A4 landscape — no letterboxing, no white bars
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH, '', 'FAST');
-    }
+    // CTA slide
+    const cta = pres.addSlide();
+    cta.background = { color: hex(t.calloutBg) };
+    cta.addText('GET IN TOUCH', { x: 0.5, y: 0.4, w: 9, h: 0.3, fontSize: 8, color: 'AAAAAA', charSpacing: 4, fontFace: 'Calibri', margin: 0 });
+    cta.addText(pdf.cta || 'DM me to learn more', { x: 0.5, y: 1.0, w: 9, h: 2.8, fontSize: 30, bold: true, color: hex(t.calloutText), fontFace: 'Georgia', valign: 'top' });
+    cta.addShape(pres.shapes.LINE, { x: 0.5, y: 4.5, w: 9, h: 0, line: { color: '444444', width: 0.5 } });
+    cta.addText('→ t.me/huangks', { x: 0.5, y: 4.65, w: 4, h: 0.5, fontSize: 16, bold: true, color: hex(t.calloutText), fontFace: 'Calibri', hyperlink: { url: 'https://t.me/huangks' }, margin: 0 });
+    cta.addText('This is not financial advice. Speak to a licensed advisor before making decisions.', { x: 5.0, y: 4.7, w: 4.5, h: 0.5, fontSize: 8, color: '888888', fontFace: 'Calibri', align: 'right', margin: 0 });
 
-    pdf.save(title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.pdf');
+    const fileName = title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.pptx';
+    await pres.writeFile({ fileName });
   } catch(e) {
     console.error(e);
-    alert('PDF generation failed. Try the Download HTML option instead.');
+    alert('Something went wrong generating the deck. Check console for details.');
   }
-
   if (btn) { btn.disabled = false; btn.textContent = '⬇ Download deck'; }
 }
 
@@ -701,7 +722,7 @@ function renderCard(result, index) {
           <button class="btn-download" onclick="downloadDeck(${index},'${deckTitle}')">⬇ Download deck</button>
           <button class="btn-regen-deck" onclick="regenDeck(${index},'${deckTitle.replace(/'/g,"\\'")}')">↺ Regenerate deck</button>
         </div>
-        <div class="pdf-hint">Exports directly as a landscape PDF — no settings needed</div>
+        <div class="pdf-hint">Downloads as .pptx — open in PowerPoint or Google Slides → export as PDF</div>
       </div>
       <div class="tab-content" id="tab-${index}-score">
         <div class="score-row">

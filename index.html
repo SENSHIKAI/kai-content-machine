@@ -101,6 +101,10 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .card-body { padding: 1.5rem; }
 .card-body-pdf { padding: 0; }
 .pdf-actions { padding: 0.85rem 1.5rem; display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; justify-content: center; background: var(--grey1); border-top: 1px solid var(--border-light); }
+.story-placeholder { text-align: center; padding: 2.5rem 1rem; background: var(--grey1); border-radius: var(--r-sm); }
+.story-preview { width: 100%; max-width: 340px; margin: 0 auto; aspect-ratio: 9/16; position: relative; overflow: hidden; border-radius: 12px; box-shadow: var(--shadow-lg); display: block; }
+.story-actions { margin-top: 0.75rem; display: flex; gap: 0.6rem; justify-content: center; align-items: center; }
+
 .pdf-hint { padding: 0.4rem 1.5rem 0.75rem; font-size: 11px; color: var(--muted); text-align: center; background: var(--grey1); }
 .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--grey1); border-radius: var(--r-sm); padding: 4px; }
 .tab { padding: 0.5rem 1rem; font-size: 11px; font-weight: 600; cursor: pointer; border: none; border-radius: 8px; background: transparent; color: var(--muted); font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.15s; flex: 1; text-align: center; }
@@ -552,52 +556,117 @@ async function downloadDeck(index, title) {
   if (!stored) return;
   const btn = document.querySelectorAll('.btn-download')[index];
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Building PDF...'; }
-
   try {
-    const deckEl = document.getElementById('deck-' + index);
-    if (!deckEl) return;
     const t = THEMES[selectedTheme] || THEMES.cream;
+    const pdf = stored.pdf;
+    const type = stored.type;
+    const imgs = _ALL_IMGS;
 
-    // Build standalone HTML with all inline styles baked in
-    const slideCSS = `
-      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap');
-      *{box-sizing:border-box;margin:0;padding:0}
-      html,body{margin:0;padding:0}
-      .deck{display:block}
-      .slide{width:297mm;height:210mm;position:relative;overflow:hidden;display:block;page-break-after:always;page-break-inside:avoid}
-      @media print{
-        *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-        html,body{margin:0;padding:0}
-        .slide{width:297mm;height:210mm;page-break-after:always;page-break-inside:avoid;overflow:hidden}
-        @page{size:297mm 210mm;margin:0}
+    function slide(bg, content) {
+      return `<div style="width:297mm;height:210mm;position:relative;overflow:hidden;background:${bg};page-break-after:always;page-break-inside:avoid;display:block">${content}</div>`;
+    }
+
+    function img(url, x, y, w, h) {
+      return `<div style="position:absolute;left:${x};top:${y};width:${w};height:${h};background-image:url(${url});background-size:cover;background-position:center"></div>`;
+    }
+
+    function txt(content, x, y, w, h, styles) {
+      return `<div style="position:absolute;left:${x};top:${y};width:${w};height:${h};overflow:hidden;${styles}">${content}</div>`;
+    }
+
+    // COVER
+    const coverImg = 'https://images.unsplash.com/' + imgs[_globalImgIdx % imgs.length] + '?w=1200&q=80&auto=format&fit=crop';
+    let slides = '';
+    slides += slide(t.coverBg,
+      img(coverImg, '55%', '0', '45%', '100%') +
+      `<div style="position:absolute;left:0;top:0;width:54%;height:100%;background:${t.coverBg}"></div>` +
+      txt(`<span style="font-size:7pt;font-weight:700;letter-spacing:3px;text-transform:uppercase;border:1px solid;border-radius:20px;padding:3px 10px;color:${t.coverAccent}">${(type.label||'').toUpperCase()}</span>`, '6%', '8%', '48%', '8%', '') +
+      txt(`<b style="font-family:Georgia,serif;font-size:26pt;line-height:1.05;text-transform:uppercase;color:${t.coverText}">${pdf.headline||title}</b>`, '6%', '20%', '48%', '45%', `display:flex;align-items:flex-start`) +
+      txt(`<span style="font-size:9pt;line-height:1.6;color:${t.coverSubtext}">${pdf.intro||''}</span>`, '6%', '65%', '48%', '18%', '') +
+      `<div style="position:absolute;left:6%;right:52%;bottom:7%;border-top:0.5px solid rgba(255,255,255,0.2);padding-top:5px;display:flex;justify-content:space-between">
+        <span style="font-size:6.5pt;letter-spacing:1px;text-transform:uppercase;color:${t.coverAccent}">Kai — Your Trusted Financial Advisor</span>
+        <span style="font-size:6.5pt;letter-spacing:1px;text-transform:uppercase;color:${t.coverAccent}">t.me/huangks</span>
+      </div>`
+    );
+
+    // CONTENT SLIDES
+    (pdf.slides || []).forEach(function(s, si) {
+      const sImg = 'https://images.unsplash.com/' + imgs[(_globalImgIdx + 1 + si) % imgs.length] + '?w=800&q=80&auto=format&fit=crop';
+      if (si % 2 === 0) {
+        // Image right, text left
+        slides += slide(t.contentBg,
+          img(sImg, '56%', '0', '44%', '100%') +
+          `<div style="position:absolute;left:0;top:0;width:55%;height:100%;background:${t.contentBg}"></div>` +
+          txt(`<span style="font-size:48pt;font-weight:900;font-family:Georgia,serif;color:${t.contentText};opacity:0.06">0${si+1}</span>`, '5%', '4%', '49%', '35%', 'display:flex;align-items:flex-start') +
+          txt(`<b style="font-family:Georgia,serif;font-size:19pt;line-height:1.1;text-transform:uppercase;color:${t.contentText}">${s.title||''}</b>`, '5%', '30%', '49%', '25%', 'display:flex;align-items:flex-start') +
+          txt(`<span style="font-size:9pt;line-height:1.7;color:${t.contentSub}">${s.body||''}</span>`, '5%', '55%', '49%', '32%', '') +
+          (s.callout ? `<div style="position:absolute;left:5%;bottom:7%;background:${t.calloutBg};color:${t.calloutText};padding:5px 12px;font-size:8pt;font-weight:600">${s.callout}</div>` : '')
+        );
+      } else {
+        // Image top, text bottom
+        slides += slide(t.contentBg,
+          img(sImg, '0', '0', '100%', '46%') +
+          `<div style="position:absolute;left:0;top:45%;width:100%;height:55%;background:${t.contentBg};padding:3% 6%">` +
+          `<div style="font-size:7pt;color:${t.contentText};opacity:0.2;font-weight:700;margin-bottom:4px;letter-spacing:2px">0${si+1}</div>` +
+          `<b style="font-family:Georgia,serif;font-size:16pt;line-height:1.1;text-transform:uppercase;color:${t.contentText};display:block;margin-bottom:6px">${s.title||''}</b>` +
+          `<span style="font-size:8.5pt;line-height:1.7;color:${t.contentSub}">${s.body||''}</span>` +
+          (s.callout ? `<div style="margin-top:8px;display:inline-block;background:${t.calloutBg};color:${t.calloutText};padding:4px 10px;font-size:7.5pt;font-weight:600">${s.callout}</div>` : '') +
+          `</div>`
+        );
       }
-    `;
+    });
 
-    const printBar = `
-      <div id="pbar" style="position:fixed;top:0;left:0;right:0;background:#1C1C1C;color:#F5F0E8;
-        padding:10px 20px;display:flex;align-items:center;justify-content:space-between;z-index:999;
-        font-family:Inter,sans-serif;font-size:13px">
-        <span style="font-weight:600">${title}</span>
-        <span style="opacity:0.6;font-size:11px">Destination: Save as PDF &nbsp;|&nbsp; Layout: Landscape &nbsp;|&nbsp; Margins: None &nbsp;|&nbsp; ✅ Background graphics</span>
-        <button onclick="document.getElementById('pbar').style.display='none';window.print()"
-          style="background:#F5F0E8;color:#1C1C1C;border:none;border-radius:6px;padding:7px 18px;
-          font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">⬇ Save as PDF</button>
-      </div>
-      <div style="height:44px"></div>
-    `;
+    // TAKEAWAY
+    slides += slide(t.takeawayBg,
+      `<div style="position:absolute;inset:0;padding:8% 10%;display:flex;flex-direction:column;justify-content:center">` +
+      `<div style="font-size:7pt;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${t.coverAccent};opacity:0.55;margin-bottom:20px">Key Takeaway</div>` +
+      `<b style="font-family:Georgia,serif;font-size:22pt;line-height:1.2;color:${t.takeawayText}">${pdf.takeaway||''}</b>` +
+      `</div>`
+    );
+
+    // CTA
+    slides += slide(t.calloutBg,
+      `<div style="position:absolute;inset:0;padding:8% 10%;display:flex;flex-direction:column;justify-content:space-between">` +
+      `<div style="font-size:7pt;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${t.calloutText};opacity:0.4">Get in touch</div>` +
+      `<b style="font-family:Georgia,serif;font-size:24pt;line-height:1.1;color:${t.calloutText}">${pdf.cta||'DM me to learn more'}</b>` +
+      `<div style="border-top:0.5px solid rgba(255,255,255,0.2);padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end">` +
+      `<span style="font-size:14pt;font-weight:700;color:${t.calloutText}">→ t.me/huangks</span>` +
+      `<span style="font-size:6.5pt;opacity:0.3;color:${t.calloutText};max-width:40%;text-align:right">This is not financial advice. Speak to a licensed advisor before making decisions.</span>` +
+      `</div></div>`
+    );
 
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
-      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-      <style>${slideCSS}</style></head>
-      <body>${printBar}<div class="deck">${deckEl.innerHTML}</div></body></html>`;
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{margin:0;padding:0}
+body{font-family:Inter,sans-serif}
+#pbar{position:fixed;top:0;left:0;right:0;background:#1C1C1C;color:#F5F0E8;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;z-index:999;font-family:Inter,sans-serif;font-size:12px}
+#pbar button{background:#F5F0E8;color:#1C1C1C;border:none;border-radius:6px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  #pbar,#spacer{display:none!important}
+  html,body{margin:0;padding:0}
+  @page{size:297mm 210mm;margin:0}
+}
+</style></head>
+<body>
+<div id="pbar">
+  <span style="font-weight:600">${title}</span>
+  <span style="opacity:0.6;font-size:10px">① Destination: Save as PDF &nbsp;|&nbsp; ② Layout: Landscape &nbsp;|&nbsp; ③ Margins: None &nbsp;|&nbsp; ④ ✅ Background graphics</span>
+  <button onclick="document.getElementById('pbar').style.display='none';document.getElementById('spacer').style.display='none';window.print()">⬇ Save as PDF</button>
+</div>
+<div id="spacer" style="height:44px"></div>
+${slides}
+</body></html>`;
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 120000);
   } catch(e) {
     console.error(e);
-    alert('Something went wrong. Try again.');
+    alert('Something went wrong. Check console.');
   }
   if (btn) { btn.disabled = false; btn.textContent = '⬇ Download deck'; }
 }
@@ -713,6 +782,7 @@ function renderCard(result, index) {
       <div class="tabs">
         <button class="tab active" onclick="switchTab(${index},'post',this)">Telegram post</button>
         <button class="tab" onclick="switchTab(${index},'pdf',this);document.getElementById('card-body-${index}').className='card-body-pdf'">Deck preview</button>
+        <button class="tab" onclick="switchTab(${index},'story',this);document.getElementById('card-body-${index}').className='card-body-pdf'">IG Story</button>
         <button class="tab" onclick="switchTab(${index},'score',this);document.getElementById('card-body-${index}').className='card-body'">Review scores</button>
       </div>
       <div class="tab-content active" id="tab-${index}-post">
@@ -733,6 +803,14 @@ function renderCard(result, index) {
           <button class="btn-regen-deck" onclick="regenDeck(${index},'${deckTitle.replace(/'/g,"\\'")}')">↺ Regenerate deck</button>
         </div>
         <div class="pdf-hint">Opens in new tab → click Save as PDF → Layout: Landscape → Margins: None → ✅ Background graphics</div>
+      </div>
+      <div class="tab-content" id="tab-${index}-story">
+        <div class="story-placeholder" id="story-${index}">
+          <div class="empty-icon">📱</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:1rem">Generate a one-page IG Story graphic from this post</div>
+          <button class="suggest-btn" onclick="generateStory(${index})">✦ Generate IG Story</button>
+          <div class="suggest-status" id="story-status-${index}" style="margin-top:0.5rem"></div>
+        </div>
       </div>
       <div class="tab-content" id="tab-${index}-score">
         <div class="score-row">
@@ -776,12 +854,94 @@ async function rewriteSection(index) {
 }
 
 
-async function regenDeck(index, deckTitle) {
+async function generateStory(index) {
   const stored = pdfStore[index];
   if (!stored) return;
-
-  // Read the CURRENT edited post text — strip any HTML tags from contenteditable
   const postEl = document.querySelector('#tab-' + index + '-post .post-text');
+  const currentPost = postEl ? postEl.innerText.trim() : stored.post;
+  const btn = document.querySelector('#story-' + index + ' .suggest-btn');
+  const status = document.getElementById('story-status-' + index);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Creating story...'; }
+  status.textContent = '';
+
+  try {
+    const t = THEMES[selectedTheme] || THEMES.cream;
+    const system = 'You are a social media designer summarising a finance post into an Instagram Story. Return ONLY valid JSON no markdown: {"headline":"punchy headline max 8 words","bullets":["point 1 max 10 words","point 2 max 10 words","point 3 max 10 words"],"cta":"short CTA max 8 words","imageKeyword":"single word for Unsplash e.g. money savings investment"}';
+    const raw = await callClaude(system, 'Summarise this post into an IG Story:\n\n' + currentPost);
+    const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    const imgUrl = unsplashSearch(data.imageKeyword || 'finance', 'story-' + index);
+    const bulletsHTML = (data.bullets || []).map(b =>
+      `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+        <div style="width:6px;height:6px;border-radius:50%;background:${t.coverAccent};flex-shrink:0;margin-top:7px"></div>
+        <div style="font-size:15px;line-height:1.5;color:${t.coverText};font-family:Inter,sans-serif">${b}</div>
+      </div>`
+    ).join('');
+
+    const storyHTML = `
+      <div class="story-preview" id="story-preview-${index}">
+        <!-- Background image -->
+        <div style="position:absolute;inset:0;background-image:url(${imgUrl});background-size:cover;background-position:center;opacity:0.18"></div>
+        <!-- Gradient overlay -->
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,${t.coverBg} 0%,${t.coverBg} 45%,rgba(0,0,0,0) 100%)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(0deg,${t.coverBg} 0%,${t.coverBg} 35%,rgba(0,0,0,0) 100%)"></div>
+        <!-- Content -->
+        <div style="position:absolute;inset:0;padding:7% 8%;display:flex;flex-direction:column;justify-content:space-between">
+          <!-- Top tag -->
+          <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${t.coverAccent};border:1px solid ${t.coverAccent};padding:3px 10px;border-radius:100px;width:fit-content">${stored.type.label.toUpperCase()}</div>
+          <!-- Middle: headline + bullets -->
+          <div>
+            <div style="font-family:Georgia,serif;font-size:26px;font-weight:900;line-height:1.1;text-transform:uppercase;color:${t.coverText};margin-bottom:20px">${data.headline || ''}</div>
+            ${bulletsHTML}
+          </div>
+          <!-- Bottom: CTA + handle -->
+          <div>
+            <div style="font-size:13px;font-weight:600;color:${t.coverAccent};margin-bottom:10px;font-family:Inter,sans-serif">${data.cta || 'DM me to learn more'}</div>
+            <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:11px;font-weight:700;color:${t.coverText};font-family:Inter,sans-serif">→ t.me/huangks</div>
+              <div style="font-size:9px;color:${t.coverAccent};opacity:0.6;font-family:Inter,sans-serif;letter-spacing:1px;text-transform:uppercase">Kai · Financial Advisor</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="story-actions">
+        <button class="suggest-btn" onclick="generateStory(${index})">↺ Regenerate</button>
+        <button class="btn-download" onclick="downloadStory(${index},'${(data.headline||'story').replace(/'/g,'')}')">⬇ Download story</button>
+      </div>
+      <div class="pdf-hint" style="text-align:center;margin-top:0.5rem">Opens in new tab → right-click image → Save as PNG</div>
+    `;
+
+    document.getElementById('story-' + index).innerHTML = storyHTML;
+  } catch(e) {
+    console.error(e);
+    status.textContent = '❌ Something went wrong. Try again.';
+    if (btn) { btn.disabled = false; btn.textContent = '✦ Generate IG Story'; }
+  }
+}
+
+function downloadStory(index, title) {
+  const preview = document.getElementById('story-preview-' + index);
+  if (!preview) return;
+  const t = THEMES[selectedTheme] || THEMES.cream;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:${t.coverBg}}
+.story{width:1080px;height:1920px;position:relative;overflow:hidden}
+@media print{@page{size:1080px 1920px;margin:0}body{margin:0}}
+</style></head>
+<body><div class="story">${preview.innerHTML}</div></body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+
+async function regenDeck(index, deckTitle) {
+  const stored = pdfStore[index];
   const rawText = postEl ? (postEl.innerText || postEl.textContent || '') : (stored.post || '');
   // Strip markdown symbols, HTML tags, and clean up spacing
   const currentPost = rawText
@@ -818,7 +978,7 @@ function switchTab(cardIndex, tabName, btn) {
   card.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + cardIndex + '-' + tabName).classList.add('active');
-  if (cardBody) cardBody.className = tabName === 'pdf' ? 'card-body-pdf' : 'card-body';
+  if (cardBody) cardBody.className = (tabName === 'pdf' || tabName === 'story') ? 'card-body-pdf' : 'card-body';
 }
 
 function copyPost(index) {

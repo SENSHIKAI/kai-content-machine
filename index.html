@@ -560,18 +560,16 @@ async function downloadDeck(index, title) {
 
     // Build standalone HTML with all inline styles baked in
     const slideCSS = `
-      *{box-sizing:border-box;margin:0;padding:0}
-      html,body{margin:0;padding:0;background:#000}
       @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap');
+      *{box-sizing:border-box;margin:0;padding:0}
+      html,body{margin:0;padding:0}
       .deck{display:block}
-      .slide{width:100vw;height:56.25vw;position:relative;overflow:hidden;display:block}
-      .slide-inner{position:absolute;inset:0}
+      .slide{width:297mm;height:210mm;position:relative;overflow:hidden;display:block;page-break-after:always;page-break-inside:avoid}
       @media print{
         *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-        html,body{margin:0;padding:0;background:#000}
-        .deck{display:block}
-        .slide{width:100vw;height:56.25vw;display:block;page-break-after:always;page-break-inside:avoid;overflow:hidden}
-        @page{size:A4 landscape;margin:0;padding:0}
+        html,body{margin:0;padding:0}
+        .slide{width:297mm;height:210mm;page-break-after:always;page-break-inside:avoid;overflow:hidden}
+        @page{size:297mm 210mm;margin:0}
       }
     `;
 

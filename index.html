@@ -107,7 +107,9 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .tab.active { background: white; color: var(--text); box-shadow: var(--shadow-sm); }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
-.post-text { background: var(--grey1); border: 1px solid var(--border-light); border-radius: var(--r-sm); padding: 1.25rem; font-size: 14px; line-height: 1.85; white-space: pre-wrap; color: var(--text); min-height: 140px; font-family: 'Inter', sans-serif; }
+.post-text { background: var(--grey1); border: 1px solid var(--border-light); border-radius: var(--r-sm); padding: 1.25rem; font-size: 14px; line-height: 1.85; color: var(--text); min-height: 140px; font-family: 'Inter', sans-serif; white-space: pre-wrap; word-break: break-word; }
+.post-text strong { font-weight: 700; color: var(--text); }
+.post-text br { display: block; content: ''; }
 .score-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; }
 .score-item { background: var(--grey1); border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 1.25rem; text-align: center; }
 .score-val { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 900; color: var(--text); }
@@ -120,7 +122,7 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 .empty-state { text-align: center; padding: 4rem 1rem; color: var(--muted); font-size: 13px; border: 1.5px dashed var(--border-light); border-radius: var(--r-lg); font-family: 'Inter', sans-serif; background: var(--surface); }
 .empty-icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.3; }
 .deck-preview { display: flex; flex-direction: column; gap: 0; border-radius: 0; overflow: hidden; }
-.slide { width: 100%; aspect-ratio: 9/16; position: relative; overflow: hidden; border-radius: 0; }
+.slide { width: 100%; aspect-ratio: 16/9; position: relative; overflow: hidden; border-radius: 0; }
 .slide-inner { position: absolute; inset: 0; padding: 2.5rem 3rem; display: flex; flex-direction: column; }
 .cover-inner { justify-content: space-between; }
 .slide-tag { display: inline-block; font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; border: 1px solid; padding: 4px 10px; border-radius: 100px; margin-bottom: 1rem; width: fit-content; }
@@ -523,75 +525,62 @@ function buildContentSlides(pdfData, type) {
 }
 
 async function downloadDeck(index, title) {
-  const deckData = pdfStore[index];
-  if (!deckData) return;
+  const stored = pdfStore[index];
+  if (!stored) return;
   const btn = document.querySelectorAll('.btn-download')[index];
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Building deck...'; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Building PDF...'; }
+
   try {
-    await loadScript('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js');
-    const pres = new PptxGenJS();
-    pres.layout = 'LAYOUT_16x9';
+    const deckEl = document.getElementById('deck-' + index);
+    if (!deckEl) return;
     const t = THEMES[selectedTheme] || THEMES.cream;
-    const pdf = deckData.pdf;
-    const type = deckData.type;
 
-    // Helper: strip hex # prefix
-    const hex = c => c.replace('#','');
-
-    // Cover slide
-    const coverSlide = pres.addSlide();
-    coverSlide.background = { color: hex(t.coverBg) };
-    const coverImg = unsplashSearch(pdf.imageKeyword || 'finance');
-    coverSlide.addImage({ path: coverImg, x: 5.2, y: 0, w: 4.8, h: 5.625, sizing: { type: 'cover', w: 4.8, h: 5.625 } });
-    coverSlide.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 5.4, h: 5.625, fill: { color: hex(t.coverBg) }, line: { color: hex(t.coverBg) } });
-    coverSlide.addText((type.label || 'Brief').toUpperCase(), { x: 0.4, y: 0.3, w: 4.5, h: 0.3, fontSize: 8, color: 'AAAAAA', charSpacing: 4, fontFace: 'Calibri', margin: 0 });
-    coverSlide.addText(pdf.headline || title, { x: 0.4, y: 0.7, w: 4.8, h: 2.5, fontSize: 36, bold: true, color: hex(t.coverText), fontFace: 'Georgia', valign: 'top' });
-    coverSlide.addText(pdf.intro || '', { x: 0.4, y: 3.4, w: 4.6, h: 1.2, fontSize: 12, color: 'BBBBBB', fontFace: 'Calibri', valign: 'top' });
-    coverSlide.addShape(pres.shapes.LINE, { x: 0.4, y: 5.1, w: 4.8, h: 0, line: { color: '444444', width: 0.5 } });
-    coverSlide.addText([{ text: 'Kai — Your Trusted Financial Advisor', options: {} }], { x: 0.4, y: 5.2, w: 3.2, h: 0.25, fontSize: 7, color: '888888', fontFace: 'Calibri', margin: 0 });
-    coverSlide.addText('t.me/huangks', { x: 4.2, y: 5.2, w: 1.4, h: 0.25, fontSize: 7, color: '888888', fontFace: 'Calibri', align: 'right', margin: 0 });
-
-    // Content slides
-    const slides = pdf.slides || [];
-    const imgs = _ALL_IMGS;
-    slides.forEach(function(slide, si) {
-      const s = pres.addSlide();
-      s.background = { color: hex(t.contentBg) };
-      const imgPhoto = 'https://images.unsplash.com/' + imgs[(_globalImgIdx + si) % imgs.length] + '?w=800&q=80&auto=format&fit=crop';
-      s.addImage({ path: imgPhoto, x: 0, y: 0, w: 10, h: 2.6, sizing: { type: 'cover', w: 10, h: 2.6 } });
-      s.addShape(pres.shapes.RECTANGLE, { x: 0, y: 2.5, w: 10, h: 3.125, fill: { color: hex(t.contentBg) }, line: { color: hex(t.contentBg) } });
-      s.addText('0' + (si + 1), { x: 0.4, y: 2.6, w: 0.8, h: 0.6, fontSize: 28, bold: true, color: hex(t.contentText), fontFace: 'Georgia', transparency: 80, margin: 0 });
-      s.addText(slide.title || '', { x: 0.4, y: 3.0, w: 9.2, h: 0.85, fontSize: 22, bold: true, color: hex(t.contentText), fontFace: 'Georgia', valign: 'top' });
-      s.addText(slide.body || '', { x: 0.4, y: 3.85, w: 9.2, h: 1.2, fontSize: 13, color: hex(t.contentSub), fontFace: 'Calibri', valign: 'top' });
-      if (slide.callout) {
-        s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.35, fill: { color: hex(t.calloutBg) }, line: { color: hex(t.calloutBg) } });
-        s.addText(slide.callout, { x: 0.5, y: 5.1, w: 9.0, h: 0.35, fontSize: 11, bold: true, color: hex(t.calloutText), fontFace: 'Calibri', valign: 'middle', margin: 0 });
+    // Build standalone HTML with all inline styles baked in
+    const slideCSS = `
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{background:#111;font-family:Inter,sans-serif}
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap');
+      .deck{display:flex;flex-direction:column;gap:2px}
+      .slide{width:100%;aspect-ratio:16/9;position:relative;overflow:hidden}
+      .slide-inner{position:absolute;inset:0}
+      @media print{
+        *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+        body{background:white}
+        .deck{gap:0}
+        .slide{page-break-after:always;width:100vw;height:56.25vw}
+        @page{size:A4 landscape;margin:0}
       }
-    });
+    `;
 
-    // Takeaway slide
-    const takeaway = pres.addSlide();
-    takeaway.background = { color: hex(t.takeawayBg) };
-    takeaway.addText('KEY TAKEAWAY', { x: 0.5, y: 0.4, w: 9, h: 0.3, fontSize: 8, color: '888888', charSpacing: 4, fontFace: 'Calibri', margin: 0 });
-    takeaway.addText(pdf.takeaway || '', { x: 0.5, y: 1.0, w: 9, h: 3.5, fontSize: 28, bold: true, color: hex(t.takeawayText), fontFace: 'Georgia', valign: 'top' });
+    const printBar = `
+      <div id="pbar" style="position:fixed;top:0;left:0;right:0;background:#1C1C1C;color:#F5F0E8;
+        padding:10px 20px;display:flex;align-items:center;justify-content:space-between;z-index:999;
+        font-family:Inter,sans-serif;font-size:13px">
+        <span style="font-weight:600">${title}</span>
+        <span style="opacity:0.6;font-size:11px">Destination: Save as PDF &nbsp;|&nbsp; Layout: Landscape &nbsp;|&nbsp; Margins: None &nbsp;|&nbsp; ✅ Background graphics</span>
+        <button onclick="document.getElementById('pbar').style.display='none';window.print()"
+          style="background:#F5F0E8;color:#1C1C1C;border:none;border-radius:6px;padding:7px 18px;
+          font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">⬇ Save as PDF</button>
+      </div>
+      <div style="height:44px"></div>
+    `;
 
-    // CTA slide
-    const cta = pres.addSlide();
-    cta.background = { color: hex(t.calloutBg) };
-    cta.addText('GET IN TOUCH', { x: 0.5, y: 0.4, w: 9, h: 0.3, fontSize: 8, color: 'AAAAAA', charSpacing: 4, fontFace: 'Calibri', margin: 0 });
-    cta.addText(pdf.cta || 'DM me to learn more', { x: 0.5, y: 1.0, w: 9, h: 2.8, fontSize: 30, bold: true, color: hex(t.calloutText), fontFace: 'Georgia', valign: 'top' });
-    cta.addShape(pres.shapes.LINE, { x: 0.5, y: 4.5, w: 9, h: 0, line: { color: '444444', width: 0.5 } });
-    cta.addText('→ t.me/huangks', { x: 0.5, y: 4.65, w: 4, h: 0.5, fontSize: 16, bold: true, color: hex(t.calloutText), fontFace: 'Calibri', hyperlink: { url: 'https://t.me/huangks' }, margin: 0 });
-    cta.addText('This is not financial advice. Speak to a licensed advisor before making decisions.', { x: 5.0, y: 4.7, w: 4.5, h: 0.5, fontSize: 8, color: '888888', fontFace: 'Calibri', align: 'right', margin: 0 });
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+      <style>${slideCSS}</style></head>
+      <body>${printBar}<div class="deck">${deckEl.innerHTML}</div></body></html>`;
 
-    const fileName = title.replace(/[^a-z0-9]/gi,'-').toLowerCase() + '-deck.pptx';
-    await pres.writeFile({ fileName });
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   } catch(e) {
     console.error(e);
-    alert('Something went wrong generating the deck. Check console for details.');
+    alert('Something went wrong. Try again.');
   }
   if (btn) { btn.disabled = false; btn.textContent = '⬇ Download deck'; }
 }
+
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
@@ -706,7 +695,7 @@ function renderCard(result, index) {
         <button class="tab" onclick="switchTab(${index},'score',this);document.getElementById('card-body-${index}').className='card-body'">Review scores</button>
       </div>
       <div class="tab-content active" id="tab-${index}-post">
-        <div class="post-text" contenteditable="true" spellcheck="true">${post.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        <div class="post-text" contenteditable="true" spellcheck="true">${post.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:0.5rem">✏️ Click to edit directly — or use the suggestion box below</div>
         <div class="suggest-box" id="suggest-box-${index}">
           <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem">💡 Suggest a rewrite</div>
@@ -722,7 +711,7 @@ function renderCard(result, index) {
           <button class="btn-download" onclick="downloadDeck(${index},'${deckTitle}')">⬇ Download deck</button>
           <button class="btn-regen-deck" onclick="regenDeck(${index},'${deckTitle.replace(/'/g,"\\'")}')">↺ Regenerate deck</button>
         </div>
-        <div class="pdf-hint">Downloads as .pptx — open in PowerPoint or Google Slides → export as PDF</div>
+        <div class="pdf-hint">Opens in new tab → click Save as PDF → Layout: Landscape → Margins: None → ✅ Background graphics</div>
       </div>
       <div class="tab-content" id="tab-${index}-score">
         <div class="score-row">
@@ -814,7 +803,15 @@ function switchTab(cardIndex, tabName, btn) {
 function copyPost(index) {
   const el = document.querySelector('#tab-' + index + '-post .post-text');
   if (!el) return;
-  navigator.clipboard.writeText(el.innerText.trim()).then(() => {
+  // Convert <strong> back to **bold** for Telegram, get clean text
+  const html = el.innerHTML;
+  const telegramText = html
+    .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')
+    .trim();
+  navigator.clipboard.writeText(telegramText).then(() => {
     const btns = document.querySelectorAll('.btn-copy');
     if (btns[index]) { btns[index].textContent = '✓ Copied!'; setTimeout(() => btns[index].textContent = 'Copy post', 2000); }
   });

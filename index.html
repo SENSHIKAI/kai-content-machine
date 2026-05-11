@@ -700,7 +700,9 @@ async function runPipeline() {
     try {
       activateNode('content');
       setProgress(25, 'Breaking down the article...');
-      const mpSystem = 'You are a financial educator writing for everyday Singaporeans aged 21-50. You take a news article and break it down into a clear simple relatable Telegram post. Write like a knowledgeable friend — helpful and honest. In the "What You Can Do Now" section, one of the steps can naturally suggest speaking to someone who knows your full situation — but keep it light, not salesy. Structure EXACTLY as:\n\n📰 WHAT HAPPENED\n[2 simple sentences explaining the news]\n\n🇸🇬 WHY IT MATTERS TO YOU\n[2-3 sentences on the Singapore impact — CPF, investments, property, cost of living, jobs]\n\n✅ WHAT YOU CAN DO NOW\n1. [action step]\n2. [action step]\n3. [action step]\n\n💬 [Soft DM call to action — "Not sure how this affects you? DM me — happy to break it down for your situation."]\n\nThis is not financial advice. Speak to a licensed advisor before making any decisions.';
+      const mpSystem = 'You are a financial educator writing for everyday people (mostly Singaporeans aged 21-50) on behalf of Kai, a licensed financial advisor. Your job is to take a news article and turn it into a post that makes readers think "hmm, so what should I do now?" — curious and slightly unsettled, but not anxious. Use this EXACT structure:\n\n📰 WHAT\'S HAPPENING\n[2 simple sentences. Explain the news like you\'re telling a friend over coffee. No jargon.]\n\n💡 WHY THIS MATTERS TO YOU\n[2-3 sentences. Make it personally relatable. If Singapore is directly affected (e.g. MAS policy, SGX, oil imports, HDB, CPF) — localise it. If it is a global story — keep it human and universal. Do NOT force a Singapore angle where it does not naturally exist.]\n\n⚖️ THE TENSION\n[This is the key section. Present two valid schools of thought without resolving it. e.g. "Some people see this as a reason to move fast. Others think waiting makes more sense. Both views have merit — and which one is right depends entirely on your own situation." Leave the question open. Do NOT give a recommendation.]\n\n💬 [One soft CTA that feels like a natural question, not a pitch. e.g. "Curious where you stand? DM me — happy to think through it with you." or "Not sure what this means for your portfolio? Let\'s have a quick chat."]\n\nThis is not financial advice. For informational purposes only. Please consult a licensed financial advisor before making any decisions.\n\nHARD RULES: Never recommend specific actions. Never name specific products to buy or sell. Never promise returns. Never use urgency language like "act now". Keep the tension unresolved — the reader should finish the post still wondering what to do.';
+
+
       const postWithCTA = await callClaude(mpSystem, 'Article content:\n\n' + marketPulseContent + '\n\nWrite the Market Pulse Telegram post.');
 
       activateNode('creative');
@@ -713,10 +715,10 @@ async function runPipeline() {
 
       activateNode('review');
       setProgress(85, 'Review Agent scoring...');
-      const reviewSystem = 'Score this finance post. Return ONLY valid JSON: {"tone":85,"compliance":90,"engagement":88}';
+      const reviewSystem = 'You are a MAS (Monetary Authority of Singapore) compliance reviewer for a licensed financial advisor Telegram channel. Score strictly and return ONLY valid JSON: {"tone":85,"compliance":90,"engagement":88,"flags":[]}\n\nTONE (0-100): Warm, educational, non-pushy? Deduct for: salesy (-20), fear-mongering (-15), overconfident claims (-15).\n\nCOMPLIANCE (0-100) — start at 100, deduct:\n- Specific return promises or projections: -40\n- Specific buy/sell/invest directives: -35\n- Urgency language (act now, limited time): -25\n- Missing or inadequate disclaimer: -20\n- Product-specific recommendations: -20\n- Misleading comparisons: -15\nBelow 70 = do not publish.\n\nENGAGEMENT (0-100): Relatable hook, clear value, curiosity gap, strong CTA, relevant to audience.\n\nFLAGS: Array of short compliance concern strings. Empty if clean. Return ONLY the JSON object.';
       let scores;
-      try { scores = JSON.parse((await callClaude(reviewSystem, postWithCTA)).replace(/```json|```/g,'').trim()); }
-      catch(e) { scores = { tone:84, compliance:92, engagement:86 }; }
+      try { const rr = await callClaude(reviewSystem, postWithCTA); scores = JSON.parse(rr.replace(/```json|```/g,'').trim()); }
+      catch(e) { scores = { tone:82, compliance:88, engagement:79, flags:[] }; }
 
       document.querySelectorAll('.agent-node').forEach(n => n.classList.remove('active'));
       setProgress(100, '✅ Market Pulse ready!');
@@ -736,7 +738,7 @@ async function runPipeline() {
       const type = POST_TYPES[i];
       activateNode('content');
       setProgress((i*25)+4, 'Content Agent writing ' + type.label + '...');
-      const contentSystem = 'You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Your tone is like a knowledgeable friend — helpful, honest, never salesy. FORMAT: Use bold section titles by wrapping them in ** like **MYTH** or **THE TRUTH** or **1. START SMALL** — this makes the post scannable on Telegram. Body text should NOT be bolded. PRODUCT TONE RULES: (1) ENDOWMENT PLANS — subtly skeptical. Hint that many people buy them without fully understanding the long lock-in or low returns. Never attack directly. e.g. "Most people sign up without knowing what they actually signed up for." (2) ILPs and WHOLE LIFE INSURANCE — always neutral to positive. Never suggest avoiding them. Hint that these work best when structured right for your situation with a trusted advisor. (3) ROBO-ADVISORS, BANKS, CPF — mention freely as valid tools. (4) One subtle organic line per post hinting everyone\'s situation is different. Never pitch. No specific financial advice. Always end with: "This is not financial advice. Speak to a licensed advisor before making decisions." Use Singaporean context. Keep sentences short. Max 3 lines per paragraph.';
+      const contentSystem = 'You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Tone: knowledgeable friend — helpful, honest, never salesy.\n\nFORMAT: Use **BOLD TITLE** for section headers only. Body text not bolded. Keep sentences short. Max 3 lines per paragraph.\n\nPRODUCT TONE RULES:\n(1) ENDOWMENT PLANS — subtly skeptical. Hint many people buy without understanding the long lock-in or low returns. Never attack directly.\n(2) ILPs and WHOLE LIFE INSURANCE — neutral to positive. Never suggest avoiding. Hint they work best when structured right for your situation.\n(3) ROBO-ADVISORS, BANKS, CPF — mention freely as valid tools.\n(4) One subtle line per post: everyone\'s situation is different.\n\nMAS COMPLIANCE — non-negotiable:\n- NEVER promise or imply specific returns or performance figures\n- NEVER say "you should invest in X" or "buy Y" or "avoid Z"\n- NEVER use urgency language like "act now" or "before it is too late"\n- NEVER make product-specific recommendations\n- NEVER make misleading comparisons\n- ALWAYS frame as general education not personal advice\n- ALWAYS end with exact disclaimer: "This is not financial advice. Please consult a licensed financial advisor before making any investment decisions."';
       const instructions = { myth:'Write a MYTH-BUSTER post. Start with a bold myth about ' + topic + '. Bust it with 2-3 truths. Format: [MYTH] then [TRUTH].', tips:'Write a BEGINNER TIPS post. Give 3 actionable tips about ' + topic + '. Number 1 2 3. Each 1-2 sentences.', real:'Write a REAL TALK post. Tell a relatable story about a mistake or lesson about ' + topic + '. Be honest and human.', check:'Write a CHECKLIST post. Give 4 yes/no items to verify about ' + topic + '. Format as checkboxes.' };
       const rawPost = await callClaude(contentSystem, 'Topic: ' + topic + '\n\n' + instructions[type.id]);
       activateNode('cta');
@@ -752,10 +754,10 @@ async function runPipeline() {
       catch(e) { pdfData = { headline: type.label, tag: type.label, imageKeyword:'finance', intro:'What every Singaporean should know.', slides:[{title:'Key insight',body:'This affects many Singaporeans. Understanding it helps you make better decisions.',callout:'Knowledge is power.',imageKeyword:'money'},{title:'What to do',body:'Take action today. Small steps make a big difference to your financial future.',callout:'Start now.',imageKeyword:'savings'}], takeaway:'Understanding your finances puts you in control.', cta:'DM me to learn more.' }; }
       activateNode('review');
       setProgress((i*25)+24, 'Review Agent scoring...');
-      const reviewSystem = 'Score this finance post. Return ONLY valid JSON: {"tone":85,"compliance":90,"engagement":88} Tone: warm jargon-free? Compliance: no specific advice has disclaimer? Engagement: gets DMs?';
+      const reviewSystem = 'You are a MAS (Monetary Authority of Singapore) compliance reviewer for a licensed financial advisor Telegram channel. Score strictly and return ONLY valid JSON: {"tone":85,"compliance":90,"engagement":88,"flags":[]}\n\nTONE (0-100): Warm, educational, non-pushy? Deduct for: salesy (-20), fear-mongering (-15), overconfident claims (-15).\n\nCOMPLIANCE (0-100) — start at 100, deduct:\n- Specific return promises or projections: -40\n- Specific buy/sell/invest directives: -35\n- Urgency language (act now, limited time): -25\n- Missing or inadequate disclaimer: -20\n- Product-specific recommendations: -20\n- Misleading comparisons: -15\nBelow 70 = do not publish.\n\nENGAGEMENT (0-100): Relatable hook, clear value, curiosity gap, strong CTA, relevant to audience.\n\nFLAGS: Array of short compliance concern strings. Empty if clean. Return ONLY the JSON object.';
       let scores;
-      try { scores = JSON.parse((await callClaude(reviewSystem, postWithCTA)).replace(/```json|```/g,'').trim()); }
-      catch(e) { scores = { tone:82, compliance:91, engagement:79 }; }
+      try { const rr = await callClaude(reviewSystem, postWithCTA); scores = JSON.parse(rr.replace(/```json|```/g,'').trim()); }
+      catch(e) { scores = { tone:82, compliance:88, engagement:79, flags:[] }; }
       setProgress((i+1)*25, type.label + ' done ✓');
       renderCard({ type, post: postWithCTA, pdf: pdfData, scores }, i);
     }
@@ -815,10 +817,11 @@ function renderCard(result, index) {
       <div class="tab-content" id="tab-${index}-score">
         <div class="score-row">
           <div class="score-item"><div class="score-val" style="color:${sc(scores.tone)}">${scores.tone}</div><div class="score-label">Tone</div></div>
-          <div class="score-item"><div class="score-val" style="color:${sc(scores.compliance)}">${scores.compliance}</div><div class="score-label">Compliance</div></div>
+          <div class="score-item"><div class="score-val" style="color:${sc(scores.compliance)}">${scores.compliance}</div><div class="score-label">MAS Compliance</div></div>
           <div class="score-item"><div class="score-val" style="color:${sc(scores.engagement)}">${scores.engagement}</div><div class="score-label">Engagement</div></div>
         </div>
-        <div style="margin-top:0.75rem;font-size:12px;color:var(--muted)">Above 80 = good to go. Below 70 = consider revising.</div>
+        <div style="margin-top:0.75rem;font-size:12px;color:var(--muted)">Above 80 = good to go. Below 70 = revise before posting. Compliance below 70 = do NOT publish.</div>
+        ${scores.flags && scores.flags.length > 0 ? `<div style="margin-top:0.75rem;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:0.75rem 1rem"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#856404;margin-bottom:0.4rem">⚠️ Compliance flags</div>${scores.flags.map(f => `<div style="font-size:12px;color:#856404;margin-bottom:2px">· ${f}</div>`).join('')}</div>` : `<div style="margin-top:0.75rem;font-size:12px;color:#2D6A4F;font-weight:500">✓ No compliance flags detected</div>`}
       </div>
     </div>
     <div class="card-actions">
@@ -920,23 +923,65 @@ async function generateStory(index) {
 }
 
 function downloadStory(index, title) {
+  const stored = pdfStore[index];
+  if (!stored) return;
+  const t = THEMES[selectedTheme] || THEMES.cream;
   const preview = document.getElementById('story-preview-' + index);
   if (!preview) return;
-  const t = THEMES[selectedTheme] || THEMES.cream;
+
+  // Get the story data from the preview content
+  const imgDiv = preview.querySelector('div[style*="background-image"]');
+  const imgUrl = imgDiv ? imgDiv.style.backgroundImage.replace(/url\(['"]?|['"]?\)/g,'') : '';
+  const headline = preview.querySelector('[style*="Georgia"]') ? preview.querySelector('[style*="Georgia"]').innerText : title;
+  const bullets = Array.from(preview.querySelectorAll('[style*="border-radius:50%"]')).map(dot => dot.parentElement.querySelector('div:last-child')?.innerText || '');
+  const ctaEl = preview.querySelectorAll('[style*="font-size:13px"]')[0];
+  const cta = ctaEl ? ctaEl.innerText : 'DM me to learn more';
+
+  const bulletsHTML = bullets.filter(b => b).map(b => `
+    <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px">
+      <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);flex-shrink:0;margin-top:8px"></div>
+      <div style="font-family:Inter,sans-serif;font-size:32px;line-height:1.45;color:${t.coverText}">${b}</div>
+    </div>`).join('');
+
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:1080px;height:1920px;overflow:hidden;background:${t.coverBg}}
-.story{width:1080px;height:1920px;position:relative;overflow:hidden}
-@media print{@page{size:1080px 1920px;margin:0}body{margin:0}}
+html,body{width:1080px;height:1920px;overflow:hidden;background:${t.coverBg};font-family:Inter,sans-serif}
 </style></head>
-<body><div class="story">${preview.innerHTML}</div></body></html>`;
+<body>
+<div style="width:1080px;height:1920px;position:relative;overflow:hidden;background:${t.coverBg}">
+  <!-- Background image -->
+  <div style="position:absolute;inset:0;background-image:url(${imgUrl});background-size:cover;background-position:center;opacity:0.2"></div>
+  <!-- Top gradient -->
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,${t.coverBg} 0%,${t.coverBg} 40%,transparent 70%)"></div>
+  <!-- Bottom gradient -->
+  <div style="position:absolute;inset:0;background:linear-gradient(0deg,${t.coverBg} 0%,${t.coverBg} 30%,transparent 60%)"></div>
+  <!-- Content -->
+  <div style="position:absolute;inset:0;padding:90px 90px;display:flex;flex-direction:column;justify-content:space-between">
+    <!-- Top tag -->
+    <div style="font-size:24px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0.55);border:2px solid rgba(255,255,255,0.3);padding:10px 28px;border-radius:100px;width:fit-content">${stored.type.label.toUpperCase()}</div>
+    <!-- Middle -->
+    <div>
+      <div style="font-family:Georgia,serif;font-size:88px;font-weight:900;line-height:1.0;text-transform:uppercase;color:${t.coverText};margin-bottom:60px">${headline}</div>
+      ${bulletsHTML}
+    </div>
+    <!-- Bottom CTA -->
+    <div>
+      <div style="font-size:34px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:30px;font-family:Inter,sans-serif">${cta}</div>
+      <div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:30px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:36px;font-weight:700;color:${t.coverText};font-family:Inter,sans-serif">→ t.me/huangks</div>
+        <div style="font-size:22px;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;letter-spacing:2px;text-transform:uppercase">Kai · Financial Advisor</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>`;
 
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
-  const win = window.open(url, '_blank');
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
 }
 
 

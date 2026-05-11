@@ -869,7 +869,7 @@ async function generateStory(index) {
 
   try {
     const t = THEMES[selectedTheme] || THEMES.cream;
-    const system = `You are a social media designer creating an Instagram Story for a licensed financial advisor. Create content that makes viewers think "what should I do now?" — curious, not anxious. Return ONLY valid JSON: {"headline":"provocative headline max 8 words","bullets":["what is happening simply","why it affects your money personally","the tension — two opposing views unresolved"],"cta":"soft open question e.g. Not sure which side you are on? DM me.","imageKeyword":"single word e.g. money market trading"}`;
+    const system = `You are a social media designer creating an Instagram Story for a licensed financial advisor. Create content that makes viewers think "what should I do now?" — curious, not anxious. Return ONLY valid JSON: {"headline":"provocative headline max 8 words","bullets":["what is happening simply","why it affects your money personally","the tension — two opposing views unresolved"],"cta":"soft warm conversational question that makes them want to DM — NOT aggressive, NOT pushy. Like a friend asking e.g. Wondering how this affects your portfolio? DM me — no pressure.","imageKeyword":"single word e.g. money market trading"}`;
     const raw = await callClaude(system, 'Summarise this post into an IG Story:\n\n' + currentPost);
     const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
 

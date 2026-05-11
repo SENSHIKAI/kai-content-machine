@@ -869,17 +869,18 @@ async function generateStory(index) {
 
   try {
     const t = THEMES[selectedTheme] || THEMES.cream;
-    const system = 'You are a social media designer summarising a finance post into an Instagram Story. Return ONLY valid JSON no markdown: {"headline":"punchy headline max 8 words","bullets":["point 1 max 10 words","point 2 max 10 words","point 3 max 10 words"],"cta":"short CTA max 8 words","imageKeyword":"single word for Unsplash e.g. money savings investment"}';
+    const system = `You are a social media designer creating an Instagram Story for a licensed financial advisor. Create content that makes viewers think "what should I do now?" — curious, not anxious. Return ONLY valid JSON: {"headline":"provocative headline max 8 words","bullets":["what is happening simply","why it affects your money personally","the tension — two opposing views unresolved"],"cta":"soft open question e.g. Not sure which side you are on? DM me.","imageKeyword":"single word e.g. money market trading"}`;
     const raw = await callClaude(system, 'Summarise this post into an IG Story:\n\n' + currentPost);
     const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
 
     const imgUrl = unsplashSearch(data.imageKeyword || 'finance', 'story-' + index);
-    const bulletsHTML = (data.bullets || []).map(b =>
-      `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
-        <div style="width:6px;height:6px;border-radius:50%;background:${t.coverAccent};flex-shrink:0;margin-top:7px"></div>
-        <div style="font-size:15px;line-height:1.5;color:${t.coverText};font-family:Inter,sans-serif">${b}</div>
-      </div>`
-    ).join('');
+    const bulletsHTML = (data.bullets || []).map((b, bi) => {
+      const isTension = bi === 2; // Third bullet is the tension point
+      return `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:${isTension ? '0' : '12px'}${isTension ? ';margin-top:6px;padding:10px 12px;background:rgba(255,255,255,0.08);border-radius:8px;border-left:2px solid rgba(255,255,255,0.3)' : ''}">
+        ${!isTension ? `<div style="width:6px;height:6px;border-radius:50%;background:${t.coverAccent};flex-shrink:0;margin-top:7px"></div>` : ''}
+        <div style="font-size:${isTension ? '13' : '14'}px;line-height:1.5;color:${isTension ? 'rgba(255,255,255,0.75)' : t.coverText};font-family:Inter,sans-serif;font-style:${isTension ? 'italic' : 'normal'}">${b}</div>
+      </div>`;
+    }).join('');
 
     const storyHTML = `
       <div class="story-preview" id="story-preview-${index}">

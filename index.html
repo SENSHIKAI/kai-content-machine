@@ -482,28 +482,34 @@ function resetImgCounters() { _globalImgIdx = 0; }
 function buildDeckHTML(pdfData, type, slidesHTML) {
   var t = THEMES[selectedTheme] || THEMES.cream;
   var coverImg = unsplashSearch(pdfData.imageKeyword || 'finance');
-  return '<div class="slide" style="background:' + t.coverBg + '">' +
-    '<div style="position:absolute;top:0;left:0;width:100%;height:52%;background-image:url(' + coverImg + ');background-size:cover;background-position:center"></div>' +
-    '<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:6% 7% 7%">' +
-    '<div style="font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';border:1px solid ' + t.coverAccent + ';padding:3px 10px;border-radius:100px;width:fit-content;margin-bottom:0.85rem">' + (pdfData.tag || type.label).toUpperCase() + '</div>' +
-    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.6rem,5vw,3rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.coverText + ';margin-bottom:0.6rem">' + (pdfData.headline || type.label) + '</div>' +
-    '<div style="font-size:clamp(0.7rem,1.3vw,0.88rem);line-height:1.65;color:' + t.coverSubtext + ';margin-bottom:1.25rem">' + (pdfData.intro || '') + '</div>' +
-    '<div style="display:flex;justify-content:space-between;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;border-top:1px solid ' + t.coverBorder + ';padding-top:0.6rem;color:' + t.coverAccent + '">' +
+  // COVER: full bleed image right 45%, content fills left 55%
+  return '<div class="slide" style="background:' + t.coverBg + ';overflow:hidden">' +
+    '<div style="position:absolute;right:0;top:0;width:45%;height:100%;background-image:url(' + coverImg + ');background-size:cover;background-position:center"></div>' +
+    '<div style="position:absolute;top:0;right:44%;bottom:0;left:0;background:' + t.coverBg + '"></div>' +
+    '<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:5% 6%">' +
+    '<div style="font-size:8px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:' + t.coverAccent + ';border:1px solid ' + t.coverAccent + ';padding:3px 10px;border-radius:100px;width:fit-content">' + (pdfData.tag || type.label).toUpperCase() + '</div>' +
+    '<div style="max-width:52%">' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.4rem,3.8vw,3rem);font-weight:900;line-height:1.0;text-transform:uppercase;letter-spacing:-0.02em;color:' + t.coverText + ';margin-bottom:0.6rem">' + (pdfData.headline || type.label) + '</div>' +
+    '<div style="font-size:clamp(0.65rem,1.1vw,0.82rem);line-height:1.7;color:' + t.coverSubtext + '">' + (pdfData.intro || '') + '</div>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:7.5px;letter-spacing:0.1em;text-transform:uppercase;border-top:1px solid ' + t.coverBorder + ';padding-top:0.5rem;color:' + t.coverAccent + ';max-width:52%">' +
     '<span>Kai — Your Trusted Financial Advisor</span><span>t.me/huangks</span>' +
     '</div></div></div>' +
     slidesHTML +
+    // TAKEAWAY — full slide, big centred text
     '<div class="slide" style="background:' + t.takeawayBg + '">' +
-    '<div style="position:absolute;inset:0;padding:8% 7%;display:flex;flex-direction:column;justify-content:center">' +
-    '<div style="font-size:8px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.coverAccent + ';opacity:0.6;margin-bottom:1.5rem">Key Takeaway</div>' +
-    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.3rem,3.5vw,2.5rem);font-weight:700;line-height:1.2;color:' + t.takeawayText + '">' + (pdfData.takeaway || '') + '</div>' +
+    '<div style="position:absolute;inset:0;padding:6% 8%;display:flex;flex-direction:column;justify-content:center;gap:1.2rem">' +
+    '<div style="font-size:8px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:' + t.coverAccent + ';opacity:0.55">Key Takeaway</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.2rem,3.2vw,2.4rem);font-weight:700;line-height:1.2;color:' + t.takeawayText + '">' + (pdfData.takeaway || '') + '</div>' +
     '</div></div>' +
+    // CTA — dark, big DM text, prominent handle
     '<div class="slide" style="background:' + t.calloutBg + '">' +
-    '<div style="position:absolute;inset:0;padding:8% 7%;display:flex;flex-direction:column;justify-content:space-between">' +
-    '<div style="font-size:8px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:' + t.calloutText + ';opacity:0.45">Get in touch</div>' +
-    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.4rem,4vw,2.8rem);font-weight:700;line-height:1.1;color:' + t.calloutText + '">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
-    '<div>' +
-    '<div style="font-size:clamp(0.9rem,2vw,1.4rem);font-weight:700;color:' + t.calloutText + ';letter-spacing:0.02em;border-bottom:2px solid currentColor;display:inline-block;padding-bottom:2px;margin-bottom:0.75rem">→ t.me/huangks</div><br>' +
-    '<div style="font-size:8px;opacity:0.35;color:' + t.calloutText + ';line-height:1.5">This is not financial advice. Speak to a licensed advisor before making decisions.</div>' +
+    '<div style="position:absolute;inset:0;padding:6% 8%;display:flex;flex-direction:column;justify-content:space-between">' +
+    '<div style="font-size:8px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:' + t.calloutText + ';opacity:0.4">Get in touch</div>' +
+    '<div style="font-family:Playfair Display,serif;font-size:clamp(1.3rem,3.5vw,2.6rem);font-weight:700;line-height:1.1;color:' + t.calloutText + '">' + (pdfData.cta || 'DM me to learn more') + '</div>' +
+    '<div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:0.6rem;display:flex;justify-content:space-between;align-items:flex-end">' +
+    '<div style="font-size:clamp(0.9rem,1.8vw,1.3rem);font-weight:700;color:' + t.calloutText + ';letter-spacing:0.02em">→ t.me/huangks</div>' +
+    '<div style="font-size:7px;opacity:0.3;color:' + t.calloutText + ';max-width:40%;text-align:right;line-height:1.5">This is not financial advice. Speak to a licensed advisor before making decisions.</div>' +
     '</div></div></div>';
 }
 
@@ -511,16 +517,33 @@ function buildContentSlides(pdfData, type) {
   var t = THEMES[selectedTheme] || THEMES.cream;
   return (pdfData.slides || []).map(function(slide, si) {
     var imgUrl = unsplashSearch(slide.imageKeyword || pdfData.imageKeyword || 'finance', type.id + '-' + si);
-    return '<div class="slide" style="background:' + t.contentBg + '">' +
-      '<div style="position:absolute;top:0;left:0;width:100%;height:42%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
-      '<div style="position:absolute;bottom:0;left:0;right:0;height:58%;padding:5% 7%;display:flex;flex-direction:column;justify-content:space-between;background:' + t.contentBg + '">' +
-      '<div>' +
-      '<div style="font-size:9px;font-weight:700;letter-spacing:0.15em;color:' + t.contentText + ';opacity:0.2;margin-bottom:0.4rem">0' + (si+1) + '</div>' +
-      '<div style="font-family:Playfair Display,serif;font-size:clamp(1.1rem,3vw,2rem);font-weight:900;line-height:1.05;text-transform:uppercase;color:' + t.contentText + ';margin-bottom:0.6rem">' + slide.title + '</div>' +
-      '<div style="font-size:clamp(0.7rem,1.3vw,0.88rem);line-height:1.75;color:' + t.contentSub + '">' + slide.body + '</div>' +
-      '</div>' +
-      (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.5rem 0.85rem;font-size:clamp(0.65rem,1.1vw,0.78rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
-      '</div></div>';
+    var isEven = si % 2 === 0;
+    if (isEven) {
+      // Layout A: image right 42%, content left 58% — maximises text space
+      return '<div class="slide" style="background:' + t.contentBg + '">' +
+        '<div style="position:absolute;right:0;top:0;width:42%;height:100%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
+        '<div style="position:absolute;top:0;right:41%;bottom:0;left:0;background:' + t.contentBg + '"></div>' +
+        '<div style="position:absolute;inset:0;padding:5% 6%;display:flex;flex-direction:column;justify-content:space-between;max-width:57%">' +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(3rem,7vw,5.5rem);font-weight:900;line-height:1;color:' + t.contentText + ';opacity:0.06">0' + (si+1) + '</div>' +
+        '<div>' +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(1rem,2.6vw,2rem);font-weight:900;line-height:1.05;text-transform:uppercase;color:' + t.contentText + ';margin-bottom:0.55rem">' + slide.title + '</div>' +
+        '<div style="font-size:clamp(0.65rem,1.1vw,0.82rem);line-height:1.8;color:' + t.contentSub + '">' + slide.body + '</div>' +
+        '</div>' +
+        (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.4rem 0.8rem;font-size:clamp(0.6rem,0.95vw,0.75rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
+        '</div></div>';
+    } else {
+      // Layout B: image top 48%, content bottom 52%
+      return '<div class="slide" style="background:' + t.contentBg + '">' +
+        '<div style="position:absolute;top:0;left:0;width:100%;height:48%;background-image:url(' + imgUrl + ');background-size:cover;background-position:center"></div>' +
+        '<div style="position:absolute;bottom:0;left:0;right:0;height:52%;background:' + t.contentBg + ';padding:3% 6%;display:flex;flex-direction:column;justify-content:space-between">' +
+        '<div>' +
+        '<div style="font-size:8px;color:' + t.contentText + ';opacity:0.2;font-weight:700;margin-bottom:0.3rem;letter-spacing:0.1em">0' + (si+1) + '</div>' +
+        '<div style="font-family:Playfair Display,serif;font-size:clamp(1rem,2.4vw,1.85rem);font-weight:900;line-height:1.05;text-transform:uppercase;color:' + t.contentText + ';margin-bottom:0.4rem">' + slide.title + '</div>' +
+        '<div style="font-size:clamp(0.62rem,1.05vw,0.8rem);line-height:1.75;color:' + t.contentSub + '">' + slide.body + '</div>' +
+        '</div>' +
+        (slide.callout ? '<div style="background:' + t.calloutBg + ';color:' + t.calloutText + ';padding:0.35rem 0.75rem;font-size:clamp(0.58rem,0.9vw,0.72rem);font-weight:600;line-height:1.4;display:inline-block">' + slide.callout + '</div>' : '') +
+        '</div></div>';
+    }
   }).join('');
 }
 
@@ -538,17 +561,17 @@ async function downloadDeck(index, title) {
     // Build standalone HTML with all inline styles baked in
     const slideCSS = `
       *{box-sizing:border-box;margin:0;padding:0}
-      body{background:#111;font-family:Inter,sans-serif}
+      html,body{margin:0;padding:0;background:#000}
       @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap');
-      .deck{display:flex;flex-direction:column;gap:2px}
-      .slide{width:100%;aspect-ratio:16/9;position:relative;overflow:hidden}
+      .deck{display:block}
+      .slide{width:100vw;height:56.25vw;position:relative;overflow:hidden;display:block}
       .slide-inner{position:absolute;inset:0}
       @media print{
         *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-        body{background:white}
-        .deck{gap:0}
-        .slide{page-break-after:always;width:100vw;height:56.25vw}
-        @page{size:A4 landscape;margin:0}
+        html,body{margin:0;padding:0;background:#000}
+        .deck{display:block}
+        .slide{width:100vw;height:56.25vw;display:block;page-break-after:always;page-break-inside:avoid;overflow:hidden}
+        @page{size:A4 landscape;margin:0;padding:0}
       }
     `;
 

@@ -602,7 +602,7 @@ async function runMarketMinute() {
         headers: {'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
         body: JSON.stringify({
           model:'claude-haiku-4-5-20251001', max_tokens:800,
-          system:'You are a financial research assistant. Search for the latest news on the given topic and summarise in 3-4 factual sentences: what happened, key numbers, market reaction. For a Singapore-based financial advisor.',
+          system:'You are a financial research assistant. Search for the latest news on the given topic and summarise in 3-4 factual sentences: what happened, key numbers, market reaction. At the end of your summary, list the sources you used in this exact format: Sources: url1, url2, url3. For a Singapore-based financial advisor.',
           tools:[{type:'web_search_20250305',name:'web_search'}],
           messages:[{role:'user',content:'Search for latest news on: ' + inputContent + '\n\nGive a factual 3-4 sentence summary.'}]
         })
@@ -611,26 +611,60 @@ async function runMarketMinute() {
       if (searchData.error) throw new Error(searchData.error.message);
       marketContext = (searchData.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || inputContent;
 
-      // Extract sources from web_search tool results
-      const searchBlocks = (searchData.content||[]).filter(b => b.type === 'tool_result' || b.type === 'web_search_tool_result');
-      const sourceBlocks = (searchData.content||[]).filter(b => b.type === 'tool_use' && b.name === 'web_search');
-      // Pull URLs from the search result content
+      // Extract sources from Anthropic web search response
       mmSources = [];
       (searchData.content||[]).forEach(block => {
-        if (block.type === 'tool_result' && Array.isArray(block.content)) {
-          block.content.forEach(item => {
+        // web_search_tool_result blocks contain the actual search results with URLs
+        if (block.type === 'tool_result') {
+          const items = Array.isArray(block.content) ? block.content : [];
+          items.forEach(item => {
             if (item.type === 'text' && item.text) {
-              const urlMatches = item.text.match(/https?:\/\/[^\s\)\"\']+/g);
-              if (urlMatches) mmSources.push(...urlMatches.slice(0,2));
+              const urlMatches = item.text.match(/https?:\/\/[^\s\)\"\'\]]+/g);
+              if (urlMatches) mmSources.push(...urlMatches);
             }
           });
         }
+        // Also check web_search_tool_result type directly
+        if (block.type === 'web_search_tool_result') {
+          const results = Array.isArray(block.content) ? block.content : [];
+          results.forEach(r => {
+            if (r.url) mmSources.push(r.url);
+            else if (r.type === 'text' && r.text) {
+              const urlMatches = r.text.match(/https?:\/\/[^\s\)\"\'\]]+/g);
+              if (urlMatches) mmSources.push(...urlMatches);
+            }
+          });
+        }
+        // Check text blocks for cited URLs (format: [source](url))
+        if (block.type === 'text' && block.text) {
+          const mdUrls = block.text.match(/\(https?:\/\/[^\)\s]+\)/g);
+          if (mdUrls) mmSources.push(...mdUrls.map(u => u.slice(1,-1)));
+          // Also plain URLs in text
+          const plainUrls = block.text.match(/Source:\s*(https?:\/\/[^\s]+)/g);
+          if (plainUrls) mmSources.push(...plainUrls.map(u => u.replace('Source:','').trim()));
+        }
       });
-      // Deduplicate and clean
-      mmSources = [...new Set(mmSources)].slice(0, 4).map(u => {
-        try { return { url: u, domain: new URL(u).hostname.replace('www.','') }; }
-        catch(e) { return { url: u, domain: u }; }
-      });
+
+      // Deduplicate, filter junk, keep max 4
+      mmSources = [...new Set(mmSources)]
+        .filter(u => u.startsWith('http') && !u.includes('anthropic.com') && u.length > 15)
+        .slice(0, 4)
+        .map(u => {
+          try { return { url: u, domain: new URL(u).hostname.replace('www.','') }; }
+          catch(e) { return { url: u, domain: u.split('/')[2] || u }; }
+        })
+      // Fallback: extract from marketContext text if no sources found yet
+      if (mmSources.length === 0 && marketContext) {
+        const ctxUrls = marketContext.match(/https?:\/\/[^\s\)\"\'\]]+/g) || [];
+        mmSources = [...new Set(ctxUrls)]
+          .filter(u => !u.includes('anthropic.com') && u.length > 15)
+          .slice(0, 4)
+          .map(u => {
+            try { return { url: u, domain: new URL(u).hostname.replace('www.','') }; }
+            catch(e) { return { url: u, domain: u.split('/')[2] || u }; }
+          })
+          .filter(s => s.domain && s.domain.includes('.'));
+      }
     }
     status.textContent = 'Writing Telegram post...';
     const telegramSystem = `You are writing a market update for Kai, a licensed financial advisor in Singapore. Plain English like telling a friend. Structure: 📰 WHAT IS HAPPENING (2 simple sentences, no jargon). 💡 WHY THIS MATTERS TO YOU (2-3 sentences, personal and relatable, only localise to Singapore if naturally relevant). ⚖️ THE QUESTION (two valid schools of thought without resolving it, leave question open). 💬 One soft warm CTA. End with: This is not financial advice. For informational purposes only. Please consult a licensed financial advisor. COMPLIANCE: No buy/sell recommendations. No specific products. No return promises. No urgency language. Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch fix D's endowment plans ILPs.`;

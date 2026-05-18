@@ -372,6 +372,7 @@ Tip: Copy the full message from your Telegram chat with Ah Pooh." style="width:1
         <div style="margin-top:0.6rem;display:flex;gap:0.5rem">
           <button class="btn-copy" onclick="copyMMPost()">Copy post</button>
         </div>
+        <div id="mm-sources" style="display:none;margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border-light)"></div>
       </div>
 
       <!-- IG Story -->
@@ -504,6 +505,7 @@ function clearMarketPulse() {
 // ── MARKET MINUTE ─────────────────────────────────────────────────────────────
 let mmActiveTab = 'search';
 let mmSelectedHeadline = '';
+let mmSources = [];
 
 function switchMMTab(tab, btn) {
   mmActiveTab = tab;
@@ -575,6 +577,7 @@ async function runMarketMinute() {
   const btn = document.getElementById('mm-generate-btn');
   const status = document.getElementById('mm-status');
   btn.disabled = true; btn.textContent = 'Generating...'; status.textContent = '';
+  mmSources = [];
   try {
     let inputContent = ''; let useWebSearch = false;
     if (mmActiveTab === 'search') {
@@ -607,6 +610,27 @@ async function runMarketMinute() {
       const searchData = await searchRes.json();
       if (searchData.error) throw new Error(searchData.error.message);
       marketContext = (searchData.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || inputContent;
+
+      // Extract sources from web_search tool results
+      const searchBlocks = (searchData.content||[]).filter(b => b.type === 'tool_result' || b.type === 'web_search_tool_result');
+      const sourceBlocks = (searchData.content||[]).filter(b => b.type === 'tool_use' && b.name === 'web_search');
+      // Pull URLs from the search result content
+      mmSources = [];
+      (searchData.content||[]).forEach(block => {
+        if (block.type === 'tool_result' && Array.isArray(block.content)) {
+          block.content.forEach(item => {
+            if (item.type === 'text' && item.text) {
+              const urlMatches = item.text.match(/https?:\/\/[^\s\)\"\']+/g);
+              if (urlMatches) mmSources.push(...urlMatches.slice(0,2));
+            }
+          });
+        }
+      });
+      // Deduplicate and clean
+      mmSources = [...new Set(mmSources)].slice(0, 4).map(u => {
+        try { return { url: u, domain: new URL(u).hostname.replace('www.','') }; }
+        catch(e) { return { url: u, domain: u }; }
+      });
     }
     status.textContent = 'Writing Telegram post...';
     const telegramSystem = `You are writing a market update for Kai, a licensed financial advisor in Singapore. Plain English like telling a friend. Structure: 📰 WHAT IS HAPPENING (2 simple sentences, no jargon). 💡 WHY THIS MATTERS TO YOU (2-3 sentences, personal and relatable, only localise to Singapore if naturally relevant). ⚖️ THE QUESTION (two valid schools of thought without resolving it, leave question open). 💬 One soft warm CTA. End with: This is not financial advice. For informational purposes only. Please consult a licensed financial advisor. COMPLIANCE: No buy/sell recommendations. No specific products. No return promises. No urgency language. Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch fix D's endowment plans ILPs.`;
@@ -618,6 +642,19 @@ async function runMarketMinute() {
     document.getElementById('mm-output').style.display = 'block';
     const telegramEl = document.getElementById('mm-telegram-text');
     telegramEl.innerHTML = telegramPost.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+
+    // Render sources
+    const sourcesEl = document.getElementById('mm-sources');
+    if (sourcesEl) {
+      if (mmSources.length > 0) {
+        sourcesEl.innerHTML = '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Sources researched</div>' +
+          mmSources.map(s => `<a href="${s.url}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--grey1);border:1px solid var(--border-light);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text);text-decoration:none;margin:0 4px 4px 0;font-family:Inter,sans-serif"><span style="font-size:9px;opacity:0.5">🔗</span>${s.domain}</a>`).join('');
+        sourcesEl.style.display = 'block';
+      } else {
+        sourcesEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic">Sources: based on pasted content — no web search used</div>';
+        sourcesEl.style.display = 'block';
+      }
+    }
     const t = THEMES[selectedTheme] || THEMES.cream;
     const imgUrl = unsplashSearch(storyData.imageKeyword || 'market', 'mm-story');
     const bulletsHTML = (storyData.bullets||[]).map(function(b,bi) {

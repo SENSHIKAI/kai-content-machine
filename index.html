@@ -636,7 +636,7 @@ async function runMarketMinute() {
     const telegramSystem = `You are writing a market update for Kai, a licensed financial advisor in Singapore. Plain English like telling a friend. Structure: 📰 WHAT IS HAPPENING (2 simple sentences, no jargon). 💡 WHY THIS MATTERS TO YOU (2-3 sentences, personal and relatable, only localise to Singapore if naturally relevant). ⚖️ THE QUESTION (two valid schools of thought without resolving it, leave question open). 💬 One soft warm CTA. End with: This is not financial advice. For informational purposes only. Please consult a licensed financial advisor. COMPLIANCE: No buy/sell recommendations. No specific products. No return promises. No urgency language. Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch fix D's endowment plans ILPs.`;
     const telegramPost = await callClaude(telegramSystem, 'Generate market update based on:\n\n' + marketContext);
     status.textContent = 'Creating IG Story...';
-    const storySystem = `Create Instagram Story content for a licensed financial advisor. Write like you are texting a smart friend — clear, direct, no fluff. Return ONLY valid JSON: {"headline":"punchy provocative headline max 8 words","bullets":["what happened — 1 to 2 sentences max, include 1 key number or fact to make it feel real","why it matters to your money — 1 sentence, personal and direct, no fluff","the tension — 2 short sentences, one view vs the other, never resolved"],"cta":"one casual question that makes them want to DM. Conversational, not salesy.","imageKeyword":"single word e.g. money market oil bitcoin"} COMPLIANCE: Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch. Never use urgency. Tension bullet shows two views only — never pick a side.`;
+    const storySystem = `Create Instagram Story content for a licensed financial advisor. Write like texting a smart friend — clear, direct, no fluff. Return ONLY valid JSON: {"headline":"punchy provocative headline max 8 words","bullets":["what happened — 1 to 2 sentences max, include 1 key number or fact to make it feel real","why it matters to your money — 1 sentence, personal and direct, no fluff","the tension — 2 short sentences, one view vs the other, never resolved"],"cta":"opportunistic angle — make them feel like there might be something to act on or explore, without recommending anything specific. e.g. Not sure if there is an opportunity here for you? DM me to find out. Or: Wondering if your portfolio is exposed to this? Let me take a look with you.","telegramCta":"short line pointing to Telegram channel e.g. Full breakdown on my Telegram. Link in bio. Keep it under 8 words.","imageKeyword":"single word e.g. money market oil bitcoin"} COMPLIANCE: Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch. Never use urgency. Tension bullet shows two views only — never pick a side.`;
     const storyRaw = await callClaude(storySystem, 'Create IG Story from:\n\n' + marketContext);
     const storyData = JSON.parse(storyRaw.replace(/```json|```/g,'').trim());
     document.getElementById('mm-output').style.display = 'block';
@@ -1156,7 +1156,6 @@ function buildStoryUI(storyData, t, imgUrl, containerId, downloadFn, regenFn) {
   const b = storyData.bullets || [];
   return `
     <div style="width:100%;max-width:340px;margin:0 auto">
-      <!-- Editable fields -->
       <div style="margin-bottom:0.75rem">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px">Headline</div>
         <input type="text" class="story-edit-field" id="${containerId}-headline" value="${(storyData.headline||'').replace(/"/g,'&quot;')}" style="width:100%;background:var(--grey1);border:1px solid var(--border-light);border-radius:8px;padding:7px 10px;font-family:Inter,sans-serif;font-size:12px;color:var(--text);outline:none"/>
@@ -1173,26 +1172,28 @@ function buildStoryUI(storyData, t, imgUrl, containerId, downloadFn, regenFn) {
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px">Bullet 3 — The tension</div>
         <input type="text" class="story-edit-field" id="${containerId}-b2" value="${(b[2]||'').replace(/"/g,'&quot;')}" style="width:100%;background:var(--grey1);border:1px solid var(--border-light);border-radius:8px;padding:7px 10px;font-family:Inter,sans-serif;font-size:12px;color:var(--text);outline:none"/>
       </div>
-      <div style="margin-bottom:1rem">
-        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px">CTA</div>
+      <div style="margin-bottom:0.75rem">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px">DM CTA</div>
         <input type="text" class="story-edit-field" id="${containerId}-cta" value="${(storyData.cta||'').replace(/"/g,'&quot;')}" style="width:100%;background:var(--grey1);border:1px solid var(--border-light);border-radius:8px;padding:7px 10px;font-family:Inter,sans-serif;font-size:12px;color:var(--text);outline:none"/>
       </div>
-      <!-- Preview -->
+      <div style="margin-bottom:1rem">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px">Telegram CTA</div>
+        <input type="text" class="story-edit-field" id="${containerId}-tgcta" value="${(storyData.telegramCta||'Full breakdown on my Telegram. Link in bio.').replace(/"/g,'&quot;')}" style="width:100%;background:var(--grey1);border:1px solid var(--border-light);border-radius:8px;padding:7px 10px;font-family:Inter,sans-serif;font-size:12px;color:var(--text);outline:none"/>
+      </div>
       <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Preview</div>
       <div id="${containerId}-preview" style="width:100%;aspect-ratio:9/16;position:relative;overflow:hidden;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.2)">
         <div style="position:absolute;inset:0;background-image:url(${imgUrl});background-size:cover;background-position:center;opacity:0.18"></div>
         <div style="position:absolute;inset:0;background:linear-gradient(180deg,${t.coverBg} 0%,${t.coverBg} 40%,rgba(0,0,0,0) 100%)"></div>
         <div style="position:absolute;inset:0;background:linear-gradient(0deg,${t.coverBg} 0%,${t.coverBg} 30%,rgba(0,0,0,0) 100%)"></div>
         <div style="position:absolute;inset:0;padding:6% 7%;display:flex;flex-direction:column;justify-content:space-between">
-          <div style="font-size:7px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${t.coverAccent};border:1px solid ${t.coverAccent};padding:2px 7px;border-radius:100px;width:fit-content" id="${containerId}-tag">MARKET MINUTE 🐻</div>
+          <div style="font-size:7px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${t.coverAccent};border:1px solid ${t.coverAccent};padding:2px 7px;border-radius:100px;width:fit-content">MARKET MINUTE</div>
           <div>
             <div style="font-family:Georgia,serif;font-size:20px;font-weight:900;line-height:1.05;text-transform:uppercase;color:${t.coverText};margin-bottom:12px" id="${containerId}-hl">${storyData.headline||''}</div>
-            <div id="${containerId}-bullets">
-              ${renderBullets(b, t)}
-            </div>
+            <div id="${containerId}-bullets">${renderBullets(b, t)}</div>
           </div>
           <div>
-            <div style="font-size:10px;font-weight:600;color:${t.coverAccent};margin-bottom:7px;font-family:Inter,sans-serif" id="${containerId}-ctaEl">${storyData.cta||''}</div>
+            <div style="font-size:10px;font-weight:600;color:${t.coverAccent};margin-bottom:5px;font-family:Inter,sans-serif" id="${containerId}-ctaEl">${storyData.cta||''}</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.45);margin-bottom:8px;font-family:Inter,sans-serif;font-style:italic" id="${containerId}-tgctaEl">${storyData.telegramCta||'Full breakdown on my Telegram. Link in bio.'}</div>
             <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:7px;display:flex;justify-content:space-between;align-items:center">
               <div style="font-size:9px;font-weight:700;color:${t.coverText}">→ t.me/huangks</div>
               <div style="font-size:7px;color:${t.coverAccent};opacity:0.6;letter-spacing:1px;text-transform:uppercase">Kai · FA</div>
@@ -1200,11 +1201,10 @@ function buildStoryUI(storyData, t, imgUrl, containerId, downloadFn, regenFn) {
           </div>
         </div>
       </div>
-      <!-- Live update button -->
       <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:center">
-        <button class="suggest-btn" onclick="updateStoryPreview('${containerId}','${t.coverBg}','${t.coverText}','${t.coverAccent}')">↺ Update preview</button>
+        <button class="suggest-btn" data-id="${containerId}" data-bg="${t.coverBg}" data-fg="${t.coverText}" data-accent="${t.coverAccent}" onclick="updateStoryPreview(this.dataset.id,this.dataset.bg,this.dataset.fg,this.dataset.accent)">↺ Update preview</button>
         <button class="suggest-btn" onclick="${regenFn}" style="background:var(--grey2);color:var(--text)">⟳ Regenerate</button>
-        <button class="btn-download" onclick="${downloadFn}('${containerId}')">⬇ Save as JPG</button>
+        <button class="btn-download" onclick="${downloadFn}(this.closest('[id]')?.id?.replace('-preview','') || '${containerId}')">⬇ Save as JPG</button>
       </div>
       <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">Edit fields above → Update preview → Save as JPG</div>
     </div>`;
@@ -1225,8 +1225,10 @@ function updateStoryPreview(id, bg, fg, accent) {
   const b1 = document.getElementById(id+'-b1');
   const b2 = document.getElementById(id+'-b2');
   const cta = document.getElementById(id+'-cta');
+  const tgcta = document.getElementById(id+'-tgcta');
   if (hl) document.getElementById(id+'-hl').textContent = hl.value;
   if (cta) document.getElementById(id+'-ctaEl').textContent = cta.value;
+  if (tgcta && document.getElementById(id+'-tgctaEl')) document.getElementById(id+'-tgctaEl').textContent = tgcta.value;
   const t = {coverBg:bg, coverText:fg, coverAccent:accent};
   const bullets = [b0?b0.value:'', b1?b1.value:'', b2?b2.value:''];
   const bulletsEl = document.getElementById(id+'-bullets');
@@ -1236,29 +1238,25 @@ function updateStoryPreview(id, bg, fg, accent) {
 async function saveStoryAsJPG(containerId) {
   const preview = document.getElementById(containerId + '-preview');
   if (!preview) return;
-  const btn = event.target;
-  const origText = btn.textContent;
-  btn.disabled = true; btn.textContent = 'Saving...';
+  const btn = event && event.target ? event.target : document.querySelector('.btn-download');
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
   try {
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
     const canvas = await html2canvas(preview, {
-      scale: 4,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
-      logging: false,
-      width: preview.offsetWidth,
-      height: preview.offsetHeight
+      scale: 4, useCORS: true, allowTaint: true,
+      backgroundColor: null, logging: false,
+      width: preview.offsetWidth, height: preview.offsetHeight
     });
     const link = document.createElement('a');
-    link.download = 'market-minute-' + Date.now() + '.jpg';
+    link.download = 'kai-market-minute-' + Date.now() + '.jpg';
     link.href = canvas.toDataURL('image/jpeg', 0.95);
     link.click();
   } catch(e) {
     console.error(e);
     alert('Could not save as JPG. Try right-clicking the preview and saving the image.');
   }
-  btn.disabled = false; btn.textContent = origText;
+  if (btn) { btn.disabled = false; btn.textContent = origText; }
 }
 
 async function generateStory(index) {
@@ -1273,7 +1271,7 @@ async function generateStory(index) {
 
   try {
     const t = THEMES[selectedTheme] || THEMES.cream;
-    const system = `You are creating an Instagram Story for a licensed financial advisor. Write like texting a smart friend — clear, direct, no fluff. Return ONLY valid JSON: {"headline":"punchy provocative headline max 8 words","bullets":["what happened — 1 to 2 sentences max, include 1 key number or fact to make it feel real","why it matters to your money — 1 sentence, personal and direct, no fluff","the tension — 2 short sentences, one view vs the other, never resolved"],"cta":"one casual question that makes them want to DM. Conversational, not salesy.","imageKeyword":"single word e.g. money market oil bitcoin"} COMPLIANCE: Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch. Never use urgency. Tension bullet shows two views only — never pick a side.`;
+    const system = `You are creating an Instagram Story for a licensed financial advisor. Write like texting a smart friend — clear, direct, no fluff. Return ONLY valid JSON: {"headline":"punchy provocative headline max 8 words","bullets":["what happened — 1 to 2 sentences max, include 1 key number or fact to make it feel real","why it matters to your money — 1 sentence, personal and direct, no fluff","the tension — 2 short sentences, one view vs the other, never resolved"],"cta":"opportunistic angle — make them feel like there might be something to act on or explore, without recommending anything specific. e.g. Not sure if there is an opportunity here for you? DM me to find out. Or: Wondering if your portfolio is exposed to this? Let me take a look with you.","telegramCta":"short line pointing to Telegram channel e.g. Full breakdown on my Telegram. Link in bio. Keep it under 8 words.","imageKeyword":"single word e.g. money market oil bitcoin"} COMPLIANCE: Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch. Never use urgency. Tension bullet shows two views only — never pick a side.`;
     const raw = await callClaude(system, 'Summarise this post into an IG Story:\n\n' + currentPost);
     const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
 

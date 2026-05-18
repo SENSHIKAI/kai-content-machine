@@ -1238,7 +1238,7 @@ function buildStoryUI(storyData, t, imgUrl, containerId, downloadFn, regenFn) {
       <div style="margin-top:0.6rem;display:flex;gap:0.5rem;justify-content:center">
         <button class="suggest-btn" data-id="${containerId}" data-bg="${t.coverBg}" data-fg="${t.coverText}" data-accent="${t.coverAccent}" onclick="updateStoryPreview(this.dataset.id,this.dataset.bg,this.dataset.fg,this.dataset.accent)">↺ Update preview</button>
         <button class="suggest-btn" onclick="${regenFn}" style="background:var(--grey2);color:var(--text)">⟳ Regenerate</button>
-        <button class="btn-download" onclick="${downloadFn}(this.closest('[id]')?.id?.replace('-preview','') || '${containerId}')">⬇ Save as JPG</button>
+        <button class="btn-download" data-container="${containerId}" onclick="saveStoryAsJPG(this.dataset.container)">⬇ Save as JPG</button>
       </div>
       <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">Edit fields above → Update preview → Save as JPG</div>
     </div>`;
@@ -1271,24 +1271,30 @@ function updateStoryPreview(id, bg, fg, accent) {
 
 async function saveStoryAsJPG(containerId) {
   const preview = document.getElementById(containerId + '-preview');
-  if (!preview) return;
-  const btn = event && event.target ? event.target : document.querySelector('.btn-download');
+  if (!preview) { console.error('Preview not found:', containerId + '-preview'); return; }
+  const btn = document.querySelector('[data-container="' + containerId + '"]');
   const origText = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving...'; }
   try {
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
     const canvas = await html2canvas(preview, {
-      scale: 4, useCORS: true, allowTaint: true,
-      backgroundColor: null, logging: false,
-      width: preview.offsetWidth, height: preview.offsetHeight
+      scale: 4,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false,
+      width: preview.offsetWidth,
+      height: preview.offsetHeight
     });
     const link = document.createElement('a');
-    link.download = 'kai-market-minute-' + Date.now() + '.jpg';
+    link.download = 'kai-story-' + Date.now() + '.jpg';
     link.href = canvas.toDataURL('image/jpeg', 0.95);
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   } catch(e) {
-    console.error(e);
-    alert('Could not save as JPG. Try right-clicking the preview and saving the image.');
+    console.error('JPG save error:', e);
+    alert('Could not save as JPG — ' + e.message);
   }
   if (btn) { btn.disabled = false; btn.textContent = origText; }
 }

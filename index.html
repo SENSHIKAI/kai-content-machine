@@ -1245,11 +1245,7 @@ function buildStoryUI(storyData, t, imgUrl, containerId, downloadFn, regenFn) {
             <div id="${containerId}-bullets" style="overflow:hidden">${renderBullets(b, t)}</div>
           </div>
           <div style="flex-shrink:0">
-            <div style="font-size:10px;font-weight:600;color:${t.coverAccent};margin-bottom:5px;font-family:Inter,sans-serif" id="${containerId}-ctaEl">${storyData.cta||''}</div>
-            <div style="height:36px;margin-bottom:5px;display:flex;align-items:center;justify-content:center">
-              <div style="font-size:7px;color:rgba(255,255,255,0.2);font-family:Inter,sans-serif;letter-spacing:1px;text-transform:uppercase">add poll sticker here</div>
-            </div>
-            <div style="font-size:9px;color:rgba(255,255,255,0.45);margin-bottom:6px;font-family:Inter,sans-serif;font-style:italic" id="${containerId}-tgctaEl">${storyData.telegramCta||'Full breakdown on my Telegram. Link in bio.'}</div>
+            <div style="height:60px;margin-bottom:6px"></div>
             <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;display:flex;justify-content:space-between;align-items:center">
               <div style="font-size:9px;font-weight:700;color:${t.coverText}">→ t.me/huangks</div>
               <div style="font-size:7px;color:${t.coverAccent};opacity:0.6;letter-spacing:1px;text-transform:uppercase">FINANCE BY KAI</div>

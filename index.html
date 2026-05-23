@@ -237,12 +237,12 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
   <div class="config-section">
     <h2>This week's theme (pick one or write your own)</h2>
     <div class="topic-grid">
-      <div class="topic-chip selected" data-topic="what to actually do with your year-end bonus in Singapore instead of letting it sit in a savings account" onclick="selectTopic(this)"><span class="topic-chip-icon">💰</span> Bonus season</div>
-      <div class="topic-chip" data-topic="the 3 most common money mistakes Singaporeans make in their 30s and how to avoid them" onclick="selectTopic(this)"><span class="topic-chip-icon">😓</span> Money mistakes</div>
-      <div class="topic-chip" data-topic="the simplest way for a complete beginner in Singapore to make their first investment in 2026" onclick="selectTopic(this)"><span class="topic-chip-icon">🎯</span> First investment</div>
-      <div class="topic-chip" data-topic="5 signs your current financial plan needs an urgent review in 2026" onclick="selectTopic(this)"><span class="topic-chip-icon">📋</span> Financial checkup</div>
-      <div class="topic-chip" data-topic="why leaving money in a Singapore savings account is silently losing you money and what to do instead" onclick="selectTopic(this)"><span class="topic-chip-icon">💸</span> Savings trap</div>
-      <div class="topic-chip" data-topic="how a Singaporean can start investing with just $200 a month using unit trusts or RSP" onclick="selectTopic(this)"><span class="topic-chip-icon">🌱</span> Start small</div>
+      <div class="topic-chip selected" data-topic="bonus season" onclick="selectTopic(this)"><span class="topic-chip-icon">💰</span> Bonus season</div>
+      <div class="topic-chip" data-topic="money mistakes" onclick="selectTopic(this)"><span class="topic-chip-icon">😓</span> Money mistakes</div>
+      <div class="topic-chip" data-topic="first investment" onclick="selectTopic(this)"><span class="topic-chip-icon">🎯</span> First investment</div>
+      <div class="topic-chip" data-topic="financial checkup" onclick="selectTopic(this)"><span class="topic-chip-icon">📋</span> Financial checkup</div>
+      <div class="topic-chip" data-topic="savings trap" onclick="selectTopic(this)"><span class="topic-chip-icon">💸</span> Savings trap</div>
+      <div class="topic-chip" data-topic="starting small" onclick="selectTopic(this)"><span class="topic-chip-icon">🌱</span> Start small</div>
     </div>
     <div class="custom-input-wrap">
       <textarea class="custom-input" id="custom-topic" rows="2" placeholder="Or type your own topic e.g. 'whole life vs term insurance'"></textarea>
@@ -393,7 +393,7 @@ Tip: Copy the full message from your Telegram chat with Ah Pooh." style="width:1
 </div>
 
 <script>
-let selectedTopic = 'what to actually do with your year-end bonus in Singapore instead of letting it sit in a savings account';
+let selectedTopic = 'bonus season';
 let selectedTheme = 'cream';
 let marketPulseContent = null; // stores fetched article text
 
@@ -1084,9 +1084,32 @@ async function runPipeline() {
       const type = POST_TYPES[i];
       activateNode('content');
       setProgress((i*25)+4, 'Content Agent writing ' + type.label + '...');
-      const contentSystem = 'You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Tone: knowledgeable friend — helpful, honest, never salesy.\n\nFORMAT: Use **BOLD TITLE** for section headers only. Body text not bolded. Keep sentences short. Max 3 lines per paragraph.\n\nPRODUCT TONE RULES:\n(1) ENDOWMENT PLANS — subtly skeptical. Hint many people buy without understanding the long lock-in or low returns. Never attack directly.\n(2) ILPs and WHOLE LIFE INSURANCE — neutral to positive. Never suggest avoiding. Hint they work best when structured right for your situation.\n(3) ROBO-ADVISORS, BANKS, CPF — mention freely as valid tools.\n(4) One subtle line per post: everyone\'s situation is different.\n\nMAS COMPLIANCE — non-negotiable:\n- NEVER promise or imply specific returns or performance figures\n- NEVER say "you should invest in X" or "buy Y" or "avoid Z"\n- NEVER use urgency language like "act now" or "before it is too late"\n- NEVER make product-specific recommendations\n- NEVER make misleading comparisons\n- ALWAYS frame as general education not personal advice\n- ALWAYS end with exact disclaimer: "This is not financial advice. Please consult a licensed financial advisor before making any investment decisions."';
-      const instructions = { myth:'Write a MYTH-BUSTER post. Start with a bold myth about ' + topic + '. Bust it with 2-3 truths. Format: [MYTH] then [TRUTH].', tips:'Write a BEGINNER TIPS post. Give 3 actionable tips about ' + topic + '. Number 1 2 3. Each 1-2 sentences.', real:'Write a REAL TALK post. Tell a relatable story about a mistake or lesson about ' + topic + '. Be honest and human.', check:'Write a CHECKLIST post. Give 4 yes/no items to verify about ' + topic + '. Format as checkboxes.' };
-      const rawPost = await callClaude(contentSystem, 'Topic: ' + topic + '\n\n' + instructions[type.id]);
+      const contentSystem = `You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Tone: knowledgeable friend — helpful, honest, never salesy.\n\nFORMAT: Use **BOLD TITLE** for section headers only. Body text not bolded. Keep sentences short. Max 3 lines per paragraph.\n\nPRODUCT TONE RULES:\n(1) ENDOWMENT PLANS — subtly skeptical. Hint many people buy without understanding the long lock-in or low returns. Never attack directly.\n(2) ILPs and WHOLE LIFE INSURANCE — neutral to positive. Never suggest avoiding. Hint they work best when structured right for your situation.\n(3) ROBO-ADVISORS, BANKS, CPF — mention freely as valid tools.\n(4) One subtle line per post: everyone's situation is different.\n\nMAS COMPLIANCE — non-negotiable:\n- NEVER promise or imply specific returns or performance figures\n- NEVER say "you should invest in X" or "buy Y" or "avoid Z"\n- NEVER use urgency language like "act now" or "before it is too late"\n- NEVER make product-specific recommendations\n- - NEVER make misleading comparisons
+- NEVER name specific banks like DBS, OCBC, UOB, Maybank or any financial institution by name
+- NEVER name specific products, robo-advisors, ETFs, funds or accounts by name
+- NEVER suggest specific dollar amounts as starting points e.g. $100 or $200 per month
+- NEVER say things like start with X amount or you can begin with X product
+- ALWAYS frame as general education not personal advice
+- ALWAYS end with exact disclaimer: \"This is not financial advice. Please consult a licensed financial advisor before making any investment decisions.\"'`;
+      // Add randomness so same topic generates fresh content each time
+      const randomSeeds = [
+        'Focus on the emotional side of this topic.',
+        'Focus on a surprising or counterintuitive angle.',
+        'Focus on what most people get wrong about this.',
+        'Focus on a real relatable scenario a 30-year-old Singaporean would face.',
+        'Focus on the long-term consequences of getting this wrong.',
+        'Focus on a common misconception and bust it.',
+        'Focus on what nobody talks about regarding this topic.',
+        'Focus on the simplest possible explanation for a complete beginner.',
+      ];
+      const seed = randomSeeds[Math.floor(Math.random() * randomSeeds.length)];
+      const instructions = {
+        myth:'Write a MYTH-BUSTER post. Pick a fresh specific myth about ' + topic + ' that you have not covered before. Bust it with 2-3 surprising truths. Format: **MYTH** then **THE TRUTH**. ' + seed,
+        tips:'Write a BEGINNER TIPS post. Give 3 fresh actionable tips about ' + topic + '. Number 1 2 3. Each 1-2 sentences. Pick angles most people have not heard before. ' + seed,
+        real:'Write a REAL TALK post. Tell a fresh relatable story about a mistake or lesson related to ' + topic + '. Be honest and human. Pick a different scenario each time. ' + seed,
+        check:'Write a CHECKLIST post. Give 4 fresh yes/no items to verify about ' + topic + '. Format as checkboxes. Pick different items each time. ' + seed
+      };
+      const rawPost = await callClaude(contentSystem, 'Topic: ' + topic + '\n\nIMPORTANT: Generate something fresh and unique — do not repeat angles or examples you have used before. Pick a specific sub-angle of this topic that feels new and surprising.\n\n' + instructions[type.id]);
       activateNode('cta');
       setProgress((i*25)+10, 'CTA Agent adding DM hook...');
       const ctaSystem = 'You are a CTA specialist for a financial advisor Telegram channel. Add a soft non-pushy DM call-to-action to the end of this post. Use styles like "DM me if this sounds familiar" or "Want a free 15-min chat? DM me." Return ONLY the full post with CTA added.';
@@ -1352,6 +1375,8 @@ async function generateStory(index) {
 
 async function regenDeck(index, deckTitle) {
   const stored = pdfStore[index];
+  if (!stored) return;
+  const postEl = document.querySelector('#tab-' + index + '-post .post-text');
   const rawText = postEl ? (postEl.innerText || postEl.textContent || '') : (stored.post || '');
   // Strip markdown symbols, HTML tags, and clean up spacing
   const currentPost = rawText

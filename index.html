@@ -1150,6 +1150,7 @@ function renderCard(result, index) {
 
         <button class="tab" onclick="switchTab(${index},'story',this);document.getElementById('card-body-${index}').className='card-body-pdf'">IG Story</button>
         <button class="tab" onclick="switchTab(${index},'score',this);document.getElementById('card-body-${index}').className='card-body'">Review scores</button>
+        <button class="tab" onclick="switchTab(${index},'export',this);document.getElementById('card-body-${index}').className='card-body';generateExportBrief(${index})">✦ Claude Design</button>
       </div>
       <div class="tab-content active" id="tab-${index}-post">
         <div class="post-text" contenteditable="true" spellcheck="true">${post.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>
@@ -1179,6 +1180,14 @@ function renderCard(result, index) {
         <div style="margin-top:0.75rem;font-size:12px;color:var(--muted)">Above 80 = good to go. Below 70 = revise before posting. Compliance below 70 = do NOT publish.</div>
         ${scores.flags && scores.flags.length > 0 ? `<div style="margin-top:0.75rem;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:0.75rem 1rem"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#856404;margin-bottom:0.4rem">⚠️ Compliance flags</div>${scores.flags.map(f => `<div style="font-size:12px;color:#856404;margin-bottom:2px">· ${f}</div>`).join('')}</div>` : `<div style="margin-top:0.75rem;font-size:12px;color:#2D6A4F;font-weight:500">✓ No compliance flags detected</div>`}
       </div>
+      <div class="tab-content" id="tab-${index}-export">
+        <div style="background:var(--grey1);border-radius:var(--r-sm);padding:1rem;margin-bottom:0.75rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.5rem">✦ Claude Design Brief</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:0.75rem">Copy the brief below → open <a href="https://claude.ai" target="_blank" style="color:var(--text);font-weight:600">claude.ai</a> → paste it in → Claude Design will build your deck.</div>
+          <div id="export-brief-${index}" style="background:white;border:1px solid var(--border-light);border-radius:8px;padding:1rem;font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap;font-family:Inter,sans-serif;max-height:300px;overflow-y:auto"></div>
+          <button class="btn-copy" style="margin-top:0.75rem" onclick="copyExportBrief(${index})">Copy brief</button>
+        </div>
+      </div>
     </div>
     <div class="card-actions">
       <button class="btn-copy" onclick="copyPost(${index})">Copy post</button>
@@ -1190,6 +1199,75 @@ function renderCard(result, index) {
 }
 
 const pdfStore = {};
+
+function generateExportBrief(index) {
+  const stored = pdfStore[index];
+  if (!stored) return;
+  const postEl = document.querySelector('#tab-' + index + '-post .post-text');
+  const post = postEl ? postEl.innerText.trim() : (stored.post || '');
+  const pdf = stored.pdf || {};
+  const type = stored.type || {};
+  const t = THEMES[selectedTheme] || THEMES.cream;
+
+  const brief = `CLAUDE DESIGN BRIEF — ${type.label || 'Finance Post'} Deck
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Please create a professional slide deck for a Singapore financial advisor's Telegram channel. Use a clean, modern editorial style — think premium finance publication, not corporate PowerPoint.
+
+BRAND
+• Channel: Growing Wealth with Kai
+• Handle: t.me/huangks | @huangks
+• Tone: Warm, credible, approachable
+• Colour theme: ${selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)} (${t.coverBg} background, ${t.coverText} text)
+
+DECK STRUCTURE (one slide per section)
+
+SLIDE 1 — COVER
+• Tag: ${type.label || 'Finance'}
+• Headline: ${pdf.headline || 'See post title'}
+• Subtitle: ${pdf.intro || 'See post opening line'}
+• Footer: Kai — Your Trusted Financial Advisor | t.me/huangks
+
+${(pdf.slides || []).map((s, i) => `SLIDE ${i+2} — POINT ${i+1}
+• Title: ${s.title || ''}
+• Body: ${s.body || ''}
+• Callout: ${s.callout || ''}`).join('\n\n')}
+
+SLIDE ${(pdf.slides || []).length + 2} — KEY TAKEAWAY
+• Text: ${pdf.takeaway || ''}
+
+SLIDE ${(pdf.slides || []).length + 3} — CALL TO ACTION
+• Headline: ${pdf.cta || 'DM me to learn more'}
+• Handle: → t.me/huangks
+• Disclaimer: This is not financial advice. Please consult a licensed financial advisor before making any investment decisions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FULL POST CONTENT (for reference)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${post}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DESIGN NOTES
+• Format: 16:9 landscape slides
+• Typography: Bold serif headlines (Georgia or similar), clean sans-serif body
+• Each slide should have one clear visual or minimal graphic element
+• Keep text minimal on each slide — let whitespace breathe
+• Include subtle brand watermark t.me/huangks on every slide footer`;
+
+  const briefEl = document.getElementById('export-brief-' + index);
+  if (briefEl) briefEl.textContent = brief;
+}
+
+function copyExportBrief(index) {
+  const briefEl = document.getElementById('export-brief-' + index);
+  if (!briefEl) return;
+  navigator.clipboard.writeText(briefEl.textContent).then(() => {
+    const btn = document.querySelector('#tab-' + index + '-export .btn-copy');
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = 'Copy brief', 2000); }
+  });
+}
+
+
 
 async function rewriteSection(index) {
   const suggestion = document.getElementById('suggest-input-' + index).value.trim();

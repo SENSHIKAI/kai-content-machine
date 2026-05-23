@@ -230,7 +230,7 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
   <div class="pipeline">
     <div class="agent-node" id="node-content"><div class="agent-icon">✍️</div><div class="agent-label">Content</div><div class="agent-desc">Writes drafts</div></div>
     <div class="agent-node" id="node-cta"><div class="agent-icon">🎯</div><div class="agent-label">CTA</div><div class="agent-desc">Adds DM hooks</div></div>
-    <div class="agent-node" id="node-creative"><div class="agent-icon">🎨</div><div class="agent-label">Creative</div><div class="agent-desc">Builds deck</div></div>
+    <div class="agent-node" id="node-creative"><div class="agent-icon">🎨</div><div class="agent-label">Creative</div><div class="agent-desc">Builds story</div></div>
     <div class="agent-node" id="node-review"><div class="agent-icon">⭐</div><div class="agent-label">Review</div><div class="agent-desc">Scores quality</div></div>
   </div>
 
@@ -393,6 +393,7 @@ Tip: Copy the full message from your Telegram chat with Ah Pooh." style="width:1
 </div>
 
 <script>
+function stripJsonFences(s) { return s.replace(/```json/g,'').replace(/```/g,'').trim(); }
 let selectedTopic = 'bonus season';
 let selectedTheme = 'cream';
 let marketPulseContent = null; // stores fetched article text
@@ -571,7 +572,7 @@ async function fetchAhPooh() {
     const latestMsg = messages[0];
     const extractSystem = 'Extract 4-6 news headlines from this market update. Return ONLY valid JSON: {"headlines":["headline 1","headline 2"]}';
     const extracted = await callClaude(extractSystem, 'Extract headlines from:\n\n' + latestMsg.substring(0,2000));
-    const parsed = JSON.parse(extracted.replace(/```json|```/g,'').trim());
+    const parsed = JSON.parse(stripJsonFences(extracted));
     const headlines = parsed.headlines || [];
     if (headlines.length === 0) throw new Error('Could not extract headlines');
     const listEl = document.getElementById('mm-headline-list');
@@ -690,7 +691,7 @@ async function runMarketMinute() {
     status.textContent = 'Creating IG Story...';
     const storySystem = `Create Instagram Story content for a licensed financial advisor. Write like texting a smart friend — clear, direct, no fluff. Return ONLY valid JSON: {"headline":"punchy provocative headline max 8 words","bullets":["what happened — 1 to 2 sentences max, include 1 key number or fact to make it feel real","why it matters to your money — 1 sentence, personal and direct, no fluff","the tension — 2 short sentences, one view vs the other, never resolved"],"cta":"poll-based CTA — tell them to vote YES on the poll below and you will reach out personally. e.g. Vote YES below if you want me to break this down for your situation. Or: Tap YES on the poll — I will reach out to everyone who does. Keep it short, warm, action-driven.","telegramCta":"short line pointing to Telegram channel e.g. Full breakdown on my Telegram. Link in bio. Keep it under 8 words.","imageKeyword":"single word e.g. money market oil bitcoin"} COMPLIANCE: Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch. Never use urgency. Tension bullet shows two views only — never pick a side.`;
     const storyRaw = await callClaude(storySystem, 'Create IG Story from:\n\n' + marketContext);
-    const storyData = JSON.parse(storyRaw.replace(/```json|```/g,'').trim());
+    const storyData = JSON.parse(stripJsonFences(storyRaw));
     document.getElementById('mm-output').style.display = 'block';
     const telegramEl = document.getElementById('mm-telegram-text');
     telegramEl.innerHTML = telegramPost.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
@@ -750,7 +751,7 @@ async function improveTopic() {
   try {
     const system = 'You are a content strategist for a financial advisor Telegram channel in Singapore. Take a vague topic and return 3 specific punchy angles. Return ONLY valid JSON: {"angles":["angle one max 12 words","angle two max 12 words","angle three max 12 words"]}';
     const result = await callClaude(system, 'Topic: ' + raw + '. Give 3 sharp angles for a Singapore finance Telegram channel.');
-    const parsed = JSON.parse(result.replace(/```json|```/g,'').trim());
+    const parsed = JSON.parse(stripJsonFences(result));
     const box = document.getElementById('improved-box');
     const anglesEl = document.getElementById('improved-angles');
     anglesEl.innerHTML = '';
@@ -1056,14 +1057,14 @@ async function runPipeline() {
       const mpCreativeSystem = 'You are a creative director. Return ONLY valid JSON no markdown: {"headline":"news headline max 8 words","tag":"Market Pulse","intro":"1-2 sentence hook on why this news matters","imageKeyword":"single word for Unsplash e.g. economy market trading","slides":[{"title":"What Happened","body":"2-3 sentences explaining the news simply","callout":"one key fact or stat","imageKeyword":"news"},{"title":"Why It Matters To Singaporeans","body":"2-3 sentences on local Singapore impact","callout":"what this means for your money","imageKeyword":"singapore"},{"title":"What You Can Do Now","body":"3 clear actionable steps Singaporeans can take","callout":"take action today","imageKeyword":"planning"}],"takeaway":"the single most important thing to remember","cta":"Not sure how this affects you? DM me — happy to help."}';
       const creativeRaw = await callClaude(mpCreativeSystem, 'Article:\n' + marketPulseContent.substring(0,1000));
       let pdfData;
-      try { pdfData = JSON.parse(creativeRaw.replace(/```json|```/g,'').trim()); }
+      try { pdfData = JSON.parse(stripJsonFences(creativeRaw)); }
       catch(e) { pdfData = { headline:'Market Update', tag:'Market Pulse', imageKeyword:'economy', intro:'Here is what the latest news means for your money.', slides:[{title:'What Happened',body:'A major global event is affecting financial markets worldwide.',callout:'Stay informed.',imageKeyword:'news'},{title:'Singapore Impact',body:'This affects Singaporeans through investments, costs, and the economy.',callout:'Know your exposure.',imageKeyword:'singapore'},{title:'Your Next Steps',body:'Review your portfolio, speak to your advisor, and stay calm.',callout:'Don\'t panic — plan.',imageKeyword:'planning'}], takeaway:'Stay informed and take action based on your personal situation.', cta:'Not sure how this affects you? DM me.' }; }
 
       activateNode('review');
       setProgress(85, 'Review Agent scoring...');
       const reviewSystem = 'You are a MAS (Monetary Authority of Singapore) compliance reviewer for a licensed financial advisor Telegram channel. Score strictly and return ONLY valid JSON: {"tone":85,"compliance":90,"engagement":88,"flags":[]}\n\nTONE (0-100): Warm, educational, non-pushy? Deduct for: salesy (-20), fear-mongering (-15), overconfident claims (-15).\n\nCOMPLIANCE (0-100) — start at 100, deduct:\n- Specific return promises or projections: -40\n- Specific buy/sell/invest directives: -35\n- Urgency language (act now, limited time): -25\n- Missing or inadequate disclaimer: -20\n- Product-specific recommendations: -20\n- Misleading comparisons: -15\nBelow 70 = do not publish.\n\nENGAGEMENT (0-100): Relatable hook, clear value, curiosity gap, strong CTA, relevant to audience.\n\nFLAGS: Array of short compliance concern strings. Empty if clean. Return ONLY the JSON object.';
       let scores;
-      try { const rr = await callClaude(reviewSystem, postWithCTA); scores = JSON.parse(rr.replace(/```json|```/g,'').trim()); }
+      try { const rr = await callClaude(reviewSystem, postWithCTA); scores = JSON.parse(stripJsonFences(rr)); }
       catch(e) { scores = { tone:82, compliance:88, engagement:79, flags:[] }; }
 
       document.querySelectorAll('.agent-node').forEach(n => n.classList.remove('active'));
@@ -1084,13 +1085,7 @@ async function runPipeline() {
       const type = POST_TYPES[i];
       activateNode('content');
       setProgress((i*25)+4, 'Content Agent writing ' + type.label + '...');
-      const contentSystem = `You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Tone: knowledgeable friend — helpful, honest, never salesy.\n\nFORMAT: Use **BOLD TITLE** for section headers only. Body text not bolded. Keep sentences short. Max 3 lines per paragraph.\n\nPRODUCT TONE RULES:\n(1) ENDOWMENT PLANS — subtly skeptical. Hint many people buy without understanding the long lock-in or low returns. Never attack directly.\n(2) ILPs and WHOLE LIFE INSURANCE — neutral to positive. Never suggest avoiding. Hint they work best when structured right for your situation.\n(3) ROBO-ADVISORS, BANKS, CPF — mention freely as valid tools.\n(4) One subtle line per post: everyone's situation is different.\n\nMAS COMPLIANCE — non-negotiable:\n- NEVER promise or imply specific returns or performance figures\n- NEVER say "you should invest in X" or "buy Y" or "avoid Z"\n- NEVER use urgency language like "act now" or "before it is too late"\n- NEVER make product-specific recommendations\n- - NEVER make misleading comparisons
-- NEVER name specific banks like DBS, OCBC, UOB, Maybank or any financial institution by name
-- NEVER name specific products, robo-advisors, ETFs, funds or accounts by name
-- NEVER suggest specific dollar amounts as starting points e.g. $100 or $200 per month
-- NEVER say things like start with X amount or you can begin with X product
-- ALWAYS frame as general education not personal advice
-- ALWAYS end with exact disclaimer: \"This is not financial advice. Please consult a licensed financial advisor before making any investment decisions.\"'`;
+      const contentSystem = 'You are a financial content writer for a Telegram channel run by Kai, a licensed financial advisor in Singapore. Write simple jargon-free warm relatable finance posts targeting Singaporeans aged 21-50. Tone: knowledgeable friend — helpful, honest, never salesy.\n\nFORMAT: Use **BOLD TITLE** for section headers only. Body text not bolded. Keep sentences short. Max 3 lines per paragraph.\n\nPRODUCT TONE RULES:\n(1) ENDOWMENT PLANS — subtly skeptical. Hint many people buy without understanding the long lock-in or low returns. Never attack directly.\n(2) ILPs and WHOLE LIFE INSURANCE — neutral to positive. Never suggest avoiding. Hint they work best when structured right for your situation.\n(3) Never mention robo-advisors, banks or specific platforms by name or category.\n(4) One subtle line per post: everyone\'s situation is different.\n\nMAS COMPLIANCE — STRICTLY NON-NEGOTIABLE. Violating any of these means the post FAILS:\n- NEVER name any specific bank e.g. DBS, OCBC, UOB, Maybank, Standard Chartered, POSB\n- NEVER name any specific financial product, platform or account e.g. RSP, SRS, Endowus, StashAway, Syfe, MoneyOwl, FSMOne, POEMS\n- NEVER name any specific fund, ETF, index or stock e.g. S&P 500, STI ETF, unit trusts by name\n- NEVER suggest or imply any specific dollar amount e.g. $100, $200, $500 per month or any starting amount\n- NEVER use phrases like "you can start with", "as low as", "minimum of", "start from" followed by any amount\n- NEVER promise or imply specific returns or performance figures\n- NEVER say "you should invest in X" or "buy Y" or "avoid Z"\n- NEVER use urgency language like "act now" or "before it is too late"\n- ALWAYS frame as general education not personal advice\n- ALWAYS end with exact disclaimer: "This is not financial advice. Please consult a licensed financial advisor before making any investment decisions."`';
       // Add randomness so same topic generates fresh content each time
       const randomSeeds = [
         'Focus on the emotional side of this topic.',
@@ -1119,13 +1114,13 @@ async function runPipeline() {
       const creativeSystem = 'You are a creative director for a Singapore financial advisor. Return ONLY valid JSON no markdown: {"headline":"punchy title max 8 words","tag":"post type","intro":"1-2 sentence hook","imageKeyword":"single english word for Unsplash e.g. money savings investment","slides":[{"title":"max 6 words","body":"2-4 sentences full detail","callout":"one punchy takeaway","imageKeyword":"single word e.g. coins growth"}],"takeaway":"key lesson 1-2 sentences","cta":"warm DM CTA max 15 words"} Generate 3-4 slides.';
       const creativeRaw = await callClaude(creativeSystem, 'Post type: ' + type.label + '\nTopic: ' + topic + '\nPost:\n' + postWithCTA);
       let pdfData;
-      try { pdfData = JSON.parse(creativeRaw.replace(/```json|```/g,'').trim()); }
+      try { pdfData = JSON.parse(stripJsonFences(creativeRaw)); }
       catch(e) { pdfData = { headline: type.label, tag: type.label, imageKeyword:'finance', intro:'What every Singaporean should know.', slides:[{title:'Key insight',body:'This affects many Singaporeans. Understanding it helps you make better decisions.',callout:'Knowledge is power.',imageKeyword:'money'},{title:'What to do',body:'Take action today. Small steps make a big difference to your financial future.',callout:'Start now.',imageKeyword:'savings'}], takeaway:'Understanding your finances puts you in control.', cta:'DM me to learn more.' }; }
       activateNode('review');
       setProgress((i*25)+24, 'Review Agent scoring...');
       const reviewSystem = 'You are a MAS (Monetary Authority of Singapore) compliance reviewer for a licensed financial advisor Telegram channel. Score strictly and return ONLY valid JSON: {"tone":85,"compliance":90,"engagement":88,"flags":[]}\n\nTONE (0-100): Warm, educational, non-pushy? Deduct for: salesy (-20), fear-mongering (-15), overconfident claims (-15).\n\nCOMPLIANCE (0-100) — start at 100, deduct:\n- Specific return promises or projections: -40\n- Specific buy/sell/invest directives: -35\n- Urgency language (act now, limited time): -25\n- Missing or inadequate disclaimer: -20\n- Product-specific recommendations: -20\n- Misleading comparisons: -15\nBelow 70 = do not publish.\n\nENGAGEMENT (0-100): Relatable hook, clear value, curiosity gap, strong CTA, relevant to audience.\n\nFLAGS: Array of short compliance concern strings. Empty if clean. Return ONLY the JSON object.';
       let scores;
-      try { const rr = await callClaude(reviewSystem, postWithCTA); scores = JSON.parse(rr.replace(/```json|```/g,'').trim()); }
+      try { const rr = await callClaude(reviewSystem, postWithCTA); scores = JSON.parse(stripJsonFences(rr)); }
       catch(e) { scores = { tone:82, compliance:88, engagement:79, flags:[] }; }
       setProgress((i+1)*25, type.label + ' done ✓');
       renderCard({ type, post: postWithCTA, pdf: pdfData, scores }, i);
@@ -1152,7 +1147,7 @@ function renderCard(result, index) {
     <div class="card-body" id="card-body-${index}">
       <div class="tabs">
         <button class="tab active" onclick="switchTab(${index},'post',this)">Telegram post</button>
-        <button class="tab" onclick="switchTab(${index},'pdf',this);document.getElementById('card-body-${index}').className='card-body-pdf'">Deck preview</button>
+
         <button class="tab" onclick="switchTab(${index},'story',this);document.getElementById('card-body-${index}').className='card-body-pdf'">IG Story</button>
         <button class="tab" onclick="switchTab(${index},'score',this);document.getElementById('card-body-${index}').className='card-body'">Review scores</button>
       </div>
@@ -1166,14 +1161,6 @@ function renderCard(result, index) {
           <button class="suggest-btn" onclick="rewriteSection(${index})">✦ Rewrite with suggestion</button>
           <div class="suggest-status" id="suggest-status-${index}"></div>
         </div>
-      </div>
-      <div class="tab-content" id="tab-${index}-pdf">
-        <div class="deck-preview" id="deck-${index}">${deckInner}</div>
-        <div class="pdf-actions">
-          <button class="btn-download" onclick="downloadDeck(${index},'${deckTitle}')">⬇ Download deck</button>
-          <button class="btn-regen-deck" onclick="regenDeck(${index},'${deckTitle.replace(/'/g,"\\'")}')">↺ Regenerate deck</button>
-        </div>
-        <div class="pdf-hint">Opens in new tab → click Save as PDF → Layout: Landscape → Margins: None → ✅ Background graphics</div>
       </div>
       <div class="tab-content" id="tab-${index}-story">
         <div class="story-placeholder" id="story-${index}">
@@ -1354,7 +1341,7 @@ async function generateStory(index) {
     const t = THEMES[selectedTheme] || THEMES.cream;
     const system = `You are creating an Instagram Story for a licensed financial advisor. Write like texting a smart friend — clear, direct, no fluff. Return ONLY valid JSON: {"headline":"punchy provocative headline max 8 words","bullets":["what happened — 1 to 2 sentences max, include 1 key number or fact to make it feel real","why it matters to your money — 1 sentence, personal and direct, no fluff","the tension — 2 short sentences, one view vs the other, never resolved"],"cta":"poll-based CTA — tell them to vote YES on the poll below and you will reach out personally. e.g. Vote YES below if you want me to break this down for your situation. Or: Tap YES on the poll — I will reach out to everyone who does. Keep it short, warm, action-driven.","telegramCta":"short line pointing to Telegram channel e.g. Full breakdown on my Telegram. Link in bio. Keep it under 8 words.","imageKeyword":"single word e.g. money market oil bitcoin"} COMPLIANCE: Never recommend specific financial products funds stocks ETFs insurance plans or actions like buy sell invest switch. Never use urgency. Tension bullet shows two views only — never pick a side.`;
     const raw = await callClaude(system, 'Summarise this post into an IG Story:\n\n' + currentPost);
-    const data = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const data = JSON.parse(stripJsonFences(raw));
 
     const imgUrl = unsplashSearch(data.imageKeyword || 'finance', 'story-' + index);
     const containerId = 'story-ui-' + index;
@@ -1396,7 +1383,7 @@ async function regenDeck(index, deckTitle) {
     const creativeSystem = 'You are a creative director building slide decks for a Singapore financial advisor. IMPORTANT: You must extract content DIRECTLY from the post provided — do NOT rewrite, paraphrase, or invent new content. Every slide title, body, and callout must come word-for-word from the post. Return ONLY valid JSON no markdown: {"headline":"take the title or first line of the post verbatim max 8 words","tag":"post type","intro":"copy the opening hook line from the post exactly","imageKeyword":"single english word e.g. money savings investment","slides":[{"title":"exact point heading from the post","body":"copy the exact explanation text from the post for this point — no paraphrasing","callout":"copy the exact key line or stat from the post","imageKeyword":"single word"}],"takeaway":"copy the exact final takeaway line from the post","cta":"copy the exact DM call-to-action line from the post"} Create one slide per distinct point in the post.';
     const creativeRaw = await callClaude(creativeSystem, 'Post type: ' + stored.type.label + '\n\nCOPY THIS POST INTO SLIDES WORD FOR WORD. Do not change anything. Here is the post:\n\n' + currentPost + '\n\nREMEMBER: Copy the exact words. Do not paraphrase.');
     let newPdf;
-    try { newPdf = JSON.parse(creativeRaw.replace(/```json|```/g,'').trim()); }
+    try { newPdf = JSON.parse(stripJsonFences(creativeRaw)); }
     catch(e) { newPdf = stored.pdf; }
     pdfStore[index].pdf = newPdf;
     const deckEl = document.getElementById('deck-' + index);
@@ -1413,7 +1400,7 @@ function switchTab(cardIndex, tabName, btn) {
   card.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + cardIndex + '-' + tabName).classList.add('active');
-  if (cardBody) cardBody.className = (tabName === 'pdf' || tabName === 'story') ? 'card-body-pdf' : 'card-body';
+  if (cardBody) cardBody.className = tabName === 'story' ? 'card-body-pdf' : 'card-body';
 }
 
 function copyPost(index) {

@@ -200,9 +200,22 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 /* ===== LANDING + VIEW ROUTER (added) ===== */
 .view{display:none}
 .view.active{display:block}
-#landing{min-height:70vh;flex-direction:column;justify-content:center;padding:3rem 0}
+#landing{flex-direction:column;justify-content:flex-start;padding:0.5rem 0 2rem}
 #landing.active{display:flex}
-.landing-head{margin-bottom:2.5rem}
+.landing-head{margin-bottom:1.6rem}
+
+/* status strip (added) */
+.status-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2.2rem}
+@media(max-width:780px){.status-strip{grid-template-columns:1fr}}
+.strip-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--r-md);padding:1.15rem 1.25rem;box-shadow:var(--shadow-sm)}
+.strip-card .st-label{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem}
+.strip-card .st-big{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:900;line-height:1;letter-spacing:-0.01em}
+.strip-card .st-sub{font-size:12.5px;color:var(--muted);margin-top:0.35rem;line-height:1.4}
+.strip-card.accent{background:var(--border);color:var(--bg)}
+.strip-card.accent .st-label{color:rgba(245,240,232,0.6)}
+.strip-card.accent .st-sub{color:rgba(245,240,232,0.75)}
+.strip-day{display:inline-block;margin-top:0.15rem;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}
+.strip-day .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:5px;vertical-align:middle;opacity:0.7}
 .landing-head .kicker{font-size:12px;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem}
 .landing-head h1{font-family:'Fraunces',serif;font-size:clamp(2.4rem,7vw,4.4rem);font-weight:900;line-height:0.95;letter-spacing:-0.02em;text-transform:uppercase}
 .landing-head p{margin-top:1rem;color:var(--muted);font-size:15px;max-width:520px;line-height:1.6}
@@ -283,6 +296,25 @@ header { padding: 2.5rem 0 2rem; margin-bottom: 2.5rem; display: flex; align-ite
 
   <!-- ===== LANDING (added) ===== -->
   <div id="landing" class="view active">
+    <!-- status strip (added) -->
+    <div class="status-strip">
+      <div class="strip-card accent">
+        <div class="st-label">Free class · July</div>
+        <div class="st-big" id="strip-countdown">—</div>
+        <div class="st-sub" id="strip-countdown-sub">Tap to set your class date</div>
+      </div>
+      <div class="strip-card">
+        <div class="st-label">Today is</div>
+        <div class="st-big" id="strip-today">—</div>
+        <div class="st-sub"><span class="strip-day" id="strip-theme"><span class="dot"></span>—</span></div>
+      </div>
+      <div class="strip-card" style="cursor:pointer" id="strip-quick">
+        <div class="st-label">Quick start</div>
+        <div class="st-big" style="font-size:1.35rem" id="strip-suggest">Weekly Engine</div>
+        <div class="st-sub" id="strip-suggest-sub">Your fastest path to today's post →</div>
+      </div>
+    </div>
+
     <div class="landing-head">
       <div class="kicker">Choose your workflow</div>
       <h1>Where to<br>today?</h1>
@@ -593,14 +625,16 @@ Produce a MATCHED CONTENT SET from ONE idea: a Reel script, an IG Story, a carou
 Return ONLY valid JSON, no markdown, exactly:
 {
  "topic":"short human title",
- "reel":{"hook":"first line shown/spoken in first 2s - must stop the scroll",
-   "beats":[{"time":"0-3s","onscreen":"short overlay text","spoken":"what Kai says"},{"time":"3-10s","onscreen":"...","spoken":"..."},{"time":"10-20s","onscreen":"...","spoken":"..."},{"time":"20-30s","onscreen":"...","spoken":"..."}],
+ "reel":{"hook":"first line shown/spoken in first 2-3s - must stop the scroll, ideally funny or unexpected",
+   "beats":[{"time":"0-6s","onscreen":"short overlay text","spoken":"what Kai says - the hook, with personality"},{"time":"6-20s","onscreen":"...","spoken":"..."},{"time":"20-34s","onscreen":"...","spoken":"..."},{"time":"34-46s","onscreen":"...","spoken":"..."},{"time":"46-58s","onscreen":"...","spoken":"the payoff + CTA"}],
    "caption":"IG caption with 3-5 hashtags"},
  "story":{"headline":"punchy 9:16 hook","bullets":["what","why","tension"],"cta":"one-line CTA matching the CTA MODE"},
  "carousel":{"slides":[{"title":"Slide 1 hook","body":"1-2 short sentences"}]},
  "telegram":"full Telegram post, line breaks ok, max 1-2 emoji, ends with the CTA"
 }
-Reel rules: talking-head (Kai + phone), 15-30s total, natural SPOKEN words Kai can say out loud, hook lands in first 2s. Carousel: 5-7 slides. Everything beginner-level.`;
+Reel rules: talking-head (Kai + phone), 45-60s total — a proper mini-lesson, NOT a rushed list. Structure: a funny/unexpected hook → ONE idea taught with room to breathe → a payoff → natural CTA. Write natural SPOKEN words Kai can actually say out loud, with personality and light humour — teach-y but casual, like explaining to a friend over kopi, never textbook-y. Use a relatable device (a metaphor, a mini-story, comparing concepts to different types of friends, etc) to make ONE concept stick rather than cramming many. 
+LOCAL FLAVOUR: Kai is Singaporean talking to Singaporeans. Weave in local references where they fit NATURALLY and per-topic (e.g. cai png / tapao / kopi, SSB / CPF / HDB / BTO, ah ma, chalet, Grab, NS) and light Singlish seasoning (lah, sia, shiok, kena, low-key) ONLY when it genuinely fits the topic — some topics carry it, some don't. Never force it or overdo it to the point of caricature; keep Kai credible as a licensed advisor. Aim light-to-medium unless the topic invites more.
+Carousel: 5-7 slides. Everything beginner-level.`;
 }
 function buildWeek(){
   const wk=document.getElementById('wk-week'); wk.dataset.built='1';
@@ -641,7 +675,7 @@ async function wkGenerate(day,idea,wantIdea){
     ? `I don't have a specific idea for ${day.name}. Pick ONE strong beginner-friendly topic fitting today's theme (${day.theme}) and generate the full matched set.`
     : `Here's my idea for ${day.name}: "${idea}". Generate the full matched content set based on it.`;
   try{
-    const raw=await wkCall(wkSystem(day),user,2400);
+    const raw=await wkCall(wkSystem(day),user,3200);
     wkData=wkParseJSON(raw);
     wkRender(day,wkData);
     wkReview(wkData);
@@ -682,7 +716,7 @@ function wkRender(day,d){
 function wkPanel(id,d){
   if(id==='reel'){const r=d.reel||{};
     const beats=(r.beats||[]).map(b=>`<div class="wk-srow"><div class="wk-stime">${b.time||''}</div><div class="wk-scell"><span class="lb">On screen</span>${b.onscreen||''}<span class="lb" style="margin-top:6px">Say</span>${b.spoken||''}</div></div>`).join('');
-    return `<h4>Talking-head Reel · 15-30s</h4>
+    return `<h4>Talking-head Reel · 45-60s mini-lesson</h4>
       <div class="wk-edit" contenteditable="true"><strong>HOOK (first 2s):</strong> ${r.hook||''}</div>
       <div class="wk-sblock">${beats}</div>
       <h4 style="margin-top:1rem">Caption</h4>
@@ -773,7 +807,42 @@ function toggleKeyVisibility() {
   else { input.type = 'password'; btn.textContent = 'Show'; }
 }
 
+function initStatusStrip(){
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const now=new Date(); const dow=now.getDay();
+  const todayEl=document.getElementById('strip-today'); if(todayEl) todayEl.textContent=days[dow];
+  // theme by posting day
+  const themeMap={1:'Market / Opportunity',3:'Teaching · hard CTA',5:'Real talk / Myth-buster'};
+  const nearest={0:'Get ahead — draft Monday',2:'Prep Wednesday teaching',4:'Prep Friday real-talk',6:'Plan next week'};
+  const themeEl=document.getElementById('strip-theme');
+  const suggestSub=document.getElementById('strip-suggest-sub');
+  if(themeMap[dow]){ themeEl.innerHTML='<span class="dot"></span>'+themeMap[dow]+' day'; if(suggestSub) suggestSub.textContent='Post today — open Weekly Engine →'; }
+  else { themeEl.innerHTML='<span class="dot"></span>'+(nearest[dow]||'Plan your week'); }
+  // countdown
+  const cd=localStorage.getItem('kai_class_date');
+  const big=document.getElementById('strip-countdown');
+  const sub=document.getElementById('strip-countdown-sub');
+  if(cd){
+    const target=new Date(cd+'T00:00:00');
+    const diff=Math.ceil((target-now)/(1000*60*60*24));
+    if(diff>1){ big.textContent=diff+' days'; sub.textContent='until your class · '+target.toLocaleDateString('en-SG',{day:'numeric',month:'short'}); }
+    else if(diff===1){ big.textContent='Tomorrow'; sub.textContent='final push — DM anyone who viewed'; }
+    else if(diff===0){ big.textContent='Today'; sub.textContent='class day — good luck 🎯'.replace('🎯',''); }
+    else { big.textContent='Done'; sub.textContent='class passed · tap to set the next one'; }
+  }
+  document.querySelector('.strip-card.accent').style.cursor='pointer';
+  document.querySelector('.strip-card.accent').onclick=function(){
+    const cur=localStorage.getItem('kai_class_date')||'';
+    const v=prompt('Enter your class date (YYYY-MM-DD):', cur);
+    if(v && /^\d{4}-\d{2}-\d{2}$/.test(v)){ localStorage.setItem('kai_class_date',v); initStatusStrip(); }
+    else if(v){ alert('Use format YYYY-MM-DD, e.g. 2026-07-26'); }
+  };
+  const quick=document.getElementById('strip-quick');
+  if(quick) quick.onclick=function(){ goView('weekly'); };
+}
+
 window.addEventListener('load', function() {
+  initStatusStrip();
   if (getApiKey()) {
     document.getElementById('api-key-input').value = '••••••••••••••••••••••••';
     const s = document.getElementById('apikey-status');
